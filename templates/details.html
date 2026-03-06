@@ -1,49 +1,63 @@
 {% extends "base.html" %}
 
-{% block title %}Details | Health Checker{% endblock %}
+{% block title %}Condition Details | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="page-card">
-    <div class="page-head">
-        <h1>Step 4: Condition Detail</h1>
-        <p>Detailed evidence and urgency context for the selected match.</p>
-    </div>
-
-    <article class="detail-card">
-        <h2>{{ condition.name }}</h2>
-        <p class="detail-intro">{{ condition.description }}</p>
-
-        <div class="detail-stats">
+<section class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-lg-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
             <div>
-                <span>Confidence</span>
-                <strong>{{ condition.confidence }}%</strong>
+                <p class="text-uppercase small text-secondary mb-1">Step 4: Clinical Detail</p>
+                <h1 class="h3 mb-2">{{ condition.name }}</h1>
+                <p class="text-secondary mb-0">{{ condition.description }}</p>
             </div>
-            <div>
-                <span>Match Label</span>
-                <strong>{{ condition.match_label }}</strong>
+            <span class="badge rounded-pill urgency-badge urgency-{{ condition.urgency }}">{{ condition.urgency|capitalize }} urgency</span>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <span>Confidence</span>
+                    <strong>{{ condition.confidence }}%</strong>
+                </div>
             </div>
-            <div>
-                <span>Urgency</span>
-                <strong>{{ condition.urgency|capitalize }}</strong>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <span>Match Label</span>
+                    <strong>{{ condition.match_label }}</strong>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <span>Severity</span>
+                    <strong>{{ condition.severity|capitalize }}</strong>
+                </div>
             </div>
         </div>
 
-        <h3>Evidence Symptoms</h3>
-        <ul class="chip-list">
+        <h2 class="h6 mb-3">Matched Symptoms / Possible Causes</h2>
+        <div class="d-flex flex-wrap gap-2 mb-4">
             {% for item in condition.evidence %}
-                <li>{{ item }}</li>
+                <span class="badge rounded-pill symptom-pill">{{ item|title }}</span>
+            {% endfor %}
+        </div>
+
+        <h2 class="h6 mb-3">Recommended Precautions</h2>
+        <ul class="list-group list-group-flush mb-4">
+            {% for tip in condition.precautions %}
+                <li class="list-group-item px-0">{{ tip }}</li>
             {% endfor %}
         </ul>
 
         {% if condition.note %}
-            <h3>Notes</h3>
-            <p class="note-box">{{ condition.note }}</p>
+            <div class="alert alert-warning">{{ condition.note }}</div>
         {% endif %}
 
-        <div class="action-row">
-            <a class="ghost-btn" href="{{ url_for('conditions') }}">Back to Conditions</a>
-            <a class="primary-btn" href="{{ url_for('treatment', condition_name=condition.name) }}">Go to Treatment</a>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('conditions') }}">Back to Results</a>
+            <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('treatment', condition_name=condition.name) }}">Open Guidance</a>
         </div>
-    </article>
+    </div>
 </section>
 {% endblock %}
+

@@ -1,12 +1,29 @@
-const symptomBodyParts = {
-    head: ["headache", "dizziness", "blurred vision", "confusion", "insomnia", "watery eyes"],
-    chest: ["cough", "shortness of breath", "chest pain", "wheezing", "palpitations"],
-    abdomen: ["abdominal pain", "stomach pain", "nausea", "vomiting", "diarrhea", "constipation", "bloating", "heartburn", "acidity", "menstrual pain", "urinary problems"],
-    arms: ["sore throat", "runny nose", "sneezing", "congestion", "rash", "swelling"],
-    legs: ["joint pain", "back pain", "muscle pain", "stiffness", "leg pain", "waist pain"]
-};
+function showLoadingOverlay() {
+    const overlay = document.getElementById("loading-overlay");
+    if (!overlay) {
+        return;
+    }
+    overlay.classList.remove("d-none");
+}
 
-const generalSymptoms = ["fever", "fatigue", "body weakness", "dehydration", "nightfall", "chills", "insomnia", "loss of appetite", "weight loss"];
+function hideLoadingOverlay() {
+    const overlay = document.getElementById("loading-overlay");
+    if (!overlay) {
+        return;
+    }
+    overlay.classList.add("d-none");
+}
+
+function setThemeMode(mode) {
+    const body = document.body;
+    if (!body) {
+        return;
+    }
+
+    const darkMode = mode === "dark";
+    body.classList.toggle("theme-dark", darkMode);
+    body.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
+}
 
 function setupThemeToggle() {
     const toggle = document.getElementById("theme-toggle");
@@ -14,52 +31,26 @@ function setupThemeToggle() {
         return;
     }
 
-    const key = "hc_theme_mode";
-    const setLabel = () => {
-        const isNight = document.body.classList.contains("night-mode");
-        toggle.textContent = isNight ? "Day" : "Night";
+    const storageKey = "hc_theme_mode";
+    const savedMode = localStorage.getItem(storageKey) || "light";
+    setThemeMode(savedMode);
+
+    const updateButton = () => {
+        const darkMode = document.body.classList.contains("theme-dark");
+        toggle.innerHTML = darkMode
+            ? '<i class="fa-solid fa-sun me-1"></i>Day'
+            : '<i class="fa-solid fa-moon me-1"></i>Night';
     };
 
-    const saved = localStorage.getItem(key);
-    if (saved === "night") {
-        document.body.classList.add("night-mode");
-    }
-    setLabel();
-
+    updateButton();
     toggle.addEventListener("click", () => {
-        document.body.classList.toggle("night-mode");
-        localStorage.setItem(
-            key,
-            document.body.classList.contains("night-mode") ? "night" : "day"
-        );
-        setLabel();
+        const nextMode = document.body.classList.contains("theme-dark")
+            ? "light"
+            : "dark";
+        setThemeMode(nextMode);
+        localStorage.setItem(storageKey, nextMode);
+        updateButton();
     });
-}
-
-function parseJsonFromScript(id) {
-    const node = document.getElementById(id);
-    if (!node) {
-        return null;
-    }
-    try {
-        return JSON.parse(node.textContent);
-    } catch (_error) {
-        return null;
-    }
-}
-
-function uniqueLower(values) {
-    const seen = new Set();
-    const items = [];
-    values.forEach((value) => {
-        const normalized = String(value || "").trim().toLowerCase();
-        if (!normalized || seen.has(normalized)) {
-            return;
-        }
-        seen.add(normalized);
-        items.push(normalized);
-    });
-    return items;
 }
 
 function setupSymptomsPage() {
@@ -68,27 +59,30 @@ function setupSymptomsPage() {
         return;
     }
 
-    const database = uniqueLower(parseJsonFromScript("symptom-database") || []);
-    let selectedSymptoms = uniqueLower(parseJsonFromScript("initial-symptoms") || []);
-    let activePart = null;
-
-    const searchInput = document.getElementById("symptom-search");
-    const dropdown = document.getElementById("autocomplete-dropdown");
+    const checkboxes = Array.from(
+        document.querySelectorAll(".symptom-checkbox")
+    );
+    const detailFields = Array.from(
+        document.querySelectorAll(".detail-field[data-requires]")
+    );
     const selectedContainer = document.getElementById("selected-symptoms");
-    const hiddenInputs = document.getElementById("symptom-hidden-inputs");
-    const progressFill = document.getElementById("symptom-progress-fill");
-    const symptomCount = document.getElementById("symptom-count");
-    const bodyButtons = Array.from(document.querySelectorAll("#body-filter button"));
-    const detailFields = Array.from(document.querySelectorAll(".detail-field[data-requires]"));
+    const countNode = document.getElementById("symptom-count");
+    const searchInput = document.getElementById("symptom-search");
+    const categoryButtons = Array.from(
+        document.querySelectorAll(".category-btn")
+    );
+    const categories = Array.from(document.querySelectorAll(".symptom-category"));
 
-    function updateProgress() {
-        const count = selectedSymptoms.length;
-        const percentage = Math.min(100, Math.round((count / 12) * 100));
-        if (progressFill) {
-            progressFill.style.width = `${percentage}%`;
-        }
-        if (symptomCount) {
-            symptomCount.textContent = String(count);
+    function getSelectedSymptoms() {
+        return checkboxes
+            .filter((checkbox) => checkbox.checked)
+            .map((checkbox) => checkbox.value.toLowerCase().trim());
+    }
+
+    function updateCount() {
+        const selectedCount = getSelectedSymptoms().length;
+        if (countNode) {
+            countNode.textContent = String(selectedCount);
         }
     }
 
@@ -98,206 +92,137 @@ function setupSymptomsPage() {
         }
 
         selectedContainer.innerHTML = "";
-        if (selectedSymptoms.length === 0) {
-            selectedContainer.innerHTML = '<p class="empty-note">No symptoms selected yet.</p>';
+        const selected = getSelectedSymptoms();
+        if (selected.length === 0) {
+            selectedContainer.innerHTML =
+                '<span class="text-secondary small">No symptoms selected.</span>';
             return;
         }
 
-        selectedSymptoms.forEach((symptom) => {
-            const chip = document.createElement("span");
-            chip.className = "symptom-chip";
-            chip.innerHTML = `${symptom}<button type="button" data-symptom="${symptom}" aria-label="Remove ${symptom}">x</button>`;
+        selected.forEach((symptom) => {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "btn btn-sm btn-outline-primary rounded-pill";
+            chip.textContent = symptom;
+            chip.addEventListener("click", () => {
+                const target = checkboxes.find(
+                    (checkbox) => checkbox.value.toLowerCase() === symptom
+                );
+                if (!target) {
+                    return;
+                }
+                target.checked = false;
+                handleStateChange();
+            });
             selectedContainer.appendChild(chip);
         });
     }
 
-    function updateDetailFieldVisibility() {
-        const selected = new Set(selectedSymptoms);
+    function updateDetailFields() {
+        const selected = new Set(getSelectedSymptoms());
         detailFields.forEach((field) => {
-            const requires = (field.dataset.requires || "")
+            const requiredSymptoms = (field.dataset.requires || "")
                 .split(",")
-                .map((item) => item.trim().toLowerCase())
+                .map((value) => value.trim().toLowerCase())
                 .filter(Boolean);
-            const show = requires.some((symptom) => selected.has(symptom));
-            field.classList.toggle("is-hidden", !show);
+            const shouldShow = requiredSymptoms.some((item) => selected.has(item));
+            field.classList.toggle("d-none", !shouldShow);
         });
     }
 
-    function closeDropdown() {
-        if (!dropdown) {
-            return;
-        }
-        dropdown.classList.remove("show");
-        dropdown.innerHTML = "";
+    function filterBySearch() {
+        const query = (searchInput?.value || "").trim().toLowerCase();
+        const symptomItems = Array.from(document.querySelectorAll(".symptom-item"));
+        symptomItems.forEach((item) => {
+            const symptomName = (item.dataset.symptom || "").toLowerCase();
+            const visible = !query || symptomName.includes(query);
+            item.classList.toggle("d-none", !visible);
+        });
     }
 
-    function getPool() {
-        if (!activePart || !symptomBodyParts[activePart]) {
-            return database;
-        }
-        return uniqueLower([...symptomBodyParts[activePart], ...generalSymptoms]);
+    function filterByCategory(categoryName) {
+        categories.forEach((categoryBlock) => {
+            if (categoryName === "all") {
+                categoryBlock.classList.remove("d-none");
+                return;
+            }
+            const active = categoryBlock.dataset.category === categoryName;
+            categoryBlock.classList.toggle("d-none", !active);
+        });
     }
 
-    function filterSymptoms(query) {
-        const normalized = String(query || "").trim().toLowerCase();
-        if (!normalized) {
-            return [];
+    function showInlineError(message) {
+        let node = document.getElementById("symptom-inline-error");
+        if (!node) {
+            node = document.createElement("div");
+            node.id = "symptom-inline-error";
+            node.className = "alert alert-danger mt-3";
+            form.prepend(node);
         }
-        return getPool()
-            .filter((symptom) => symptom.includes(normalized) && !selectedSymptoms.includes(symptom))
-            .slice(0, 8);
+        node.textContent = message;
     }
 
-    function addSymptom(symptom) {
-        const normalized = String(symptom || "").trim().toLowerCase();
-        if (!normalized || selectedSymptoms.includes(normalized)) {
-            return;
+    function clearInlineError() {
+        const node = document.getElementById("symptom-inline-error");
+        if (node) {
+            node.remove();
         }
-        selectedSymptoms.push(normalized);
+    }
+
+    function handleStateChange() {
+        updateCount();
         renderSelectedSymptoms();
-        updateProgress();
-        updateDetailFieldVisibility();
-        if (searchInput) {
-            searchInput.value = "";
-            searchInput.focus();
-        }
-        closeDropdown();
+        updateDetailFields();
+        clearInlineError();
     }
 
-    function renderDropdown(items) {
-        if (!dropdown) {
-            return;
-        }
-        dropdown.innerHTML = "";
-
-        if (items.length === 0) {
-            closeDropdown();
-            return;
-        }
-
-        items.forEach((item) => {
-            const row = document.createElement("button");
-            row.type = "button";
-            row.className = "autocomplete-item";
-            row.textContent = item;
-            row.addEventListener("click", () => addSymptom(item));
-            dropdown.appendChild(row);
-        });
-
-        dropdown.classList.add("show");
-    }
-
-    bodyButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            const part = button.dataset.part;
-            if (activePart === part) {
-                activePart = null;
-                button.classList.remove("active");
-            } else {
-                activePart = part;
-                bodyButtons.forEach((item) => item.classList.remove("active"));
-                button.classList.add("active");
-            }
-
-            if (searchInput && searchInput.value.trim()) {
-                renderDropdown(filterSymptoms(searchInput.value));
-            }
-        });
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", handleStateChange);
     });
 
     if (searchInput) {
-        searchInput.addEventListener("input", () => {
-            renderDropdown(filterSymptoms(searchInput.value));
-        });
-
-        searchInput.addEventListener("keydown", (event) => {
-            if (event.key !== "Enter") {
-                return;
-            }
-            event.preventDefault();
-            const matches = filterSymptoms(searchInput.value);
-            if (matches.length > 0) {
-                addSymptom(matches[0]);
-            }
-        });
+        searchInput.addEventListener("input", filterBySearch);
     }
 
-    document.addEventListener("click", (event) => {
-        if (!dropdown || !searchInput) {
-            return;
-        }
-        if (dropdown.contains(event.target) || searchInput.contains(event.target)) {
-            return;
-        }
-        closeDropdown();
+    categoryButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            categoryButtons.forEach((item) => item.classList.remove("active"));
+            button.classList.add("active");
+            filterByCategory(button.dataset.category || "all");
+            filterBySearch();
+        });
     });
-
-    if (selectedContainer) {
-        selectedContainer.addEventListener("click", (event) => {
-            const target = event.target;
-            if (!(target instanceof HTMLElement)) {
-                return;
-            }
-            const symptom = target.dataset.symptom;
-            if (!symptom) {
-                return;
-            }
-            selectedSymptoms = selectedSymptoms.filter((item) => item !== symptom);
-            renderSelectedSymptoms();
-            updateProgress();
-            updateDetailFieldVisibility();
-        });
-    }
 
     form.addEventListener("submit", (event) => {
-        if (selectedSymptoms.length === 0) {
+        if (getSelectedSymptoms().length === 0) {
             event.preventDefault();
-            alert("Please add at least one symptom.");
+            showInlineError("Select at least one symptom before running prediction.");
             return;
         }
-
-        if (!hiddenInputs) {
-            return;
-        }
-
-        hiddenInputs.innerHTML = "";
-        selectedSymptoms.forEach((symptom) => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "symptoms";
-            input.value = symptom;
-            hiddenInputs.appendChild(input);
-        });
+        showLoadingOverlay();
     });
 
-    renderSelectedSymptoms();
-    updateProgress();
-    updateDetailFieldVisibility();
+    handleStateChange();
 }
 
 function setupContactPage() {
-    const messageForm = document.getElementById("message-form");
-    if (!messageForm) {
+    const form = document.getElementById("message-form");
+    if (!form) {
         return;
     }
 
-    messageForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        messageForm.innerHTML = "<p class=\"success-note\">Message sent. Our support team will contact you shortly.</p>";
+    form.addEventListener("submit", () => {
+        showLoadingOverlay();
     });
 }
+
+window.addEventListener("pageshow", () => {
+    hideLoadingOverlay();
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     setupThemeToggle();
     setupSymptomsPage();
     setupContactPage();
+    hideLoadingOverlay();
 });
-
-window.showContactDetails = function showContactDetails(type) {
-    if (type === "phone") {
-        alert("Phone: +1 (987) 654-3210");
-    }
-    if (type === "emergency") {
-        alert("Emergency: +1 (555) 911-0000");
-    }
-};

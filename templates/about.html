@@ -1,27 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}About | Health Checker{% endblock %}
+{% block title %}About | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="page-card">
-    <div class="page-head">
-        <h1>About Health Checker</h1>
-        <p>A structured symptom-check workflow designed for educational triage support.</p>
-    </div>
-
-    <div class="info-grid">
-        <article>
-            <h3>How It Works</h3>
-            <p>The checker compares your selected symptoms against weighted condition profiles, applies demographic adjustments, detects emergency patterns, and organizes result confidence by severity and evidence overlap.</p>
-        </article>
-        <article>
-            <h3>Medical Safety</h3>
-            <p>Outputs are guidance only and not a clinical diagnosis. Always consult a licensed clinician for persistent, severe, or uncertain symptoms.</p>
-        </article>
-        <article>
-            <h3>Ayurvedic Layer</h3>
-            <p>The treatment step composes a structured Ayurvedic paragraph from matched remedies, plus doctor-escalation and lifestyle guidance.</p>
-        </article>
+<section class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-lg-5">
+        <h1 class="h3 mb-4"><i class="fa-solid fa-circle-info me-2 text-primary"></i>About Health Checker Pro</h1>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <article class="card border-0 bg-light-subtle h-100">
+                    <div class="card-body">
+                        <h2 class="h5">How It Works</h2>
+                        <p class="text-secondary mb-0">The platform maps selected symptoms to weighted condition profiles and ranks matches by confidence, severity, and evidence overlap.</p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="card border-0 bg-light-subtle h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Safety Focus</h2>
+                        <p class="text-secondary mb-0">Emergency symptom combinations trigger high-priority guidance. The app provides educational support, not a formal diagnosis.</p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="card border-0 bg-light-subtle h-100">
+                    <div class="card-body">
+                        <h2 class="h5">Why It Helps</h2>
+                        <p class="text-secondary mb-0">Clear dashboards and history tracking improve symptom reporting quality before clinician consultation.</p>
+                    </div>
+                </article>
+            </div>
+        </div>
     </div>
 </section>
 {% endblock %}
+

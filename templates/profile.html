@@ -1,55 +1,77 @@
 {% extends "base.html" %}
 
-{% block title %}Profile | Health Checker{% endblock %}
+{% block title %}Profile & History | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="page-card">
-    <div class="page-head">
-        <h1>History</h1>
-        <p>Your recent symptom checks and generated guidance.</p>
-    </div>
-
-    {% if history %}
-        <div class="history-stack">
-            {% for entry in history %}
-                <article class="history-card">
-                    <header>
-                        <h3>{{ entry.date }}</h3>
-                        <span>{{ entry.symptoms|length }} symptoms</span>
-                    </header>
-
-                    <div class="history-section">
-                        <h4>Symptoms</h4>
-                        <ul class="chip-list">
-                            {% for symptom in entry.symptoms %}
-                                <li>{{ symptom }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <div class="history-section">
-                        <h4>Condition Matches</h4>
-                        <ul class="simple-list">
-                            {% for condition in entry.conditions %}
-                                <li>{{ condition }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <div class="history-section">
-                        <h4>Remedies</h4>
-                        <ul class="simple-list">
-                            {% for remedy in entry.remedies %}
-                                <li>{{ remedy }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </article>
-            {% endfor %}
+<section class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-lg-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="h3 mb-1"><i class="fa-solid fa-user-clock me-2 text-primary"></i>Profile History</h1>
+                <p class="text-secondary mb-0">Your recent symptom checks and generated outcomes.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-primary rounded-pill" href="{{ url_for('info') }}">New Check</a>
+                {% if history %}
+                    <form method="post" action="{{ url_for('clear_profile_history') }}" onsubmit="return confirm('Delete all history records? This cannot be undone.');">
+                        <button type="submit" class="btn btn-outline-danger rounded-pill">
+                            <i class="fa-solid fa-trash-can me-1"></i>Delete All
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
         </div>
-    {% else %}
-        <p class="empty-note">No history found yet.</p>
-        <a class="primary-btn" href="{{ url_for('info') }}">Start Symptom Check</a>
-    {% endif %}
+
+        {% if history %}
+            <div class="vstack gap-3">
+                {% for entry in history %}
+                    <article class="card border-0 bg-light-subtle shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+                                <strong>{{ entry.date }}</strong>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-info-subtle text-info-emphasis">{{ entry.symptoms|length }} symptoms</span>
+                                    <form method="post" action="{{ url_for('delete_profile_history_entry', entry_id=entry.id) }}" onsubmit="return confirm('Delete this history record?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                            <i class="fa-solid fa-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <h2 class="h6">Symptoms</h2>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for symptom in entry.symptoms %}
+                                            <span class="badge rounded-pill symptom-pill">{{ symptom }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h2 class="h6">Condition Matches</h2>
+                                    <ul class="small mb-0">
+                                        {% for condition in entry.conditions %}
+                                            <li>{{ condition }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h2 class="h6">Remedies</h2>
+                                    <ul class="small mb-0">
+                                        {% for remedy in entry.remedies %}
+                                            <li>{{ remedy }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-secondary mb-3">No history found yet.</p>
+            <a class="btn btn-primary rounded-pill" href="{{ url_for('info') }}">Start Symptom Check</a>
+        {% endif %}
+    </div>
 </section>
 {% endblock %}

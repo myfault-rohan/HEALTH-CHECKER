@@ -1,189 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Checker - Symptom Assessment</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        .header-content h1, .login-container h1 {
-            background: linear-gradient(to right, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: text-gradient 15s ease infinite;
-        }
-        @keyframes text-gradient {
-            0%{background-position:0% 50%}
-            50%{background-position:100% 50%}
-            100%{background-position:0% 50%}
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <div class="header-content">
-            <h1>Health Checker</h1>
-            <nav>
-                <a href="{{ url_for('index') }}">Home</a>
-                <a href="{{ url_for('about') }}">About</a>
-                <a href="{{ url_for('contact') }}">Contact</a>
-                <a href="{{ url_for('profile') }}">Profile</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
-                <button id="theme-toggle" class="theme-btn" aria-label="Toggle theme">🌙</button>
-            </nav>
-        </div>
-    </header>
+{% extends "base.html" %}
 
-    <main class="checker-shell">
-        <section class="workflow-bar">
-            <div class="workflow-hint">Symptom Checker Workflow</div>
-            <ol class="workflow-steps" id="workflow-steps">
-                <li class="active" data-step="info">Info</li>
-                <li data-step="symptoms">Symptoms</li>
-                <li data-step="conditions">Conditions</li>
-                <li data-step="details">Details</li>
-                <li data-step="treatment">Treatment</li>
-            </ol>
-        </section>
+{% block title %}Health Checker Pro | Smart Symptom Insights{% endblock %}
 
-        <div id="emergency-alert" class="emergency-alert">
-            <h3>Urgent Health Advisory</h3>
-            <p id="emergency-message">Please seek emergency care if severe symptoms continue.</p>
-            <div class="emergency-numbers">
-                <a href="tel:102" class="emergency-number">Call 102</a>
-                <a href="tel:108" class="emergency-number">Call 108</a>
-            </div>
-        </div>
-
-        <section class="checker-grid">
-            <div class="checker-main">
-                <section class="panel personal-info">
-                    <h3>Patient Info</h3>
-                    <form id="personal-form">
-                        <label for="age">Age</label>
-                        <input type="number" id="age" name="age" min="1" max="120" required placeholder="Age">
-                        <label for="gender">Gender</label>
-                        <select id="gender" name="gender" required>
-                            <option value="">Select gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </form>
-                    <p class="info-note">This is a guidance tool, not a medical diagnosis.</p>
-                </section>
-
-                <section class="panel symptoms-section">
-                    <div class="symptoms-header">
-                        <h3>What are your symptoms?</h3>
-                        <div class="selection-progress">
-                            <div class="progress-bar-container">
-                                <div class="progress-bar" id="progress-bar" style="width: 0%">0%</div>
-                            </div>
-                            <p class="progress-text"><span id="symptom-count">0</span> symptoms selected</p>
-                        </div>
-                    </div>
-
-                    <div class="search-container">
-                        <input type="text" id="symptom-search" placeholder="Search for symptoms like fever, headache, cough..." autocomplete="off">
-                        <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
-                    </div>
-
-                    <form id="symptom-form">
-                        <div class="actions-row">
-                            <button type="button" id="reset-checker" class="ghost-btn">Start Over</button>
-                            <button type="submit" class="check-button">Analyze Symptoms</button>
-                        </div>
-                    </form>
-                </section>
-            </div>
-
-            <aside class="panel body-diagram-section">
-                <h3>Body Region Filter</h3>
-                <div class="body-diagram-wrapper">
-                    <div class="human-body-container">
-                        <svg class="human-body-svg" viewBox="0 0 180 400">
-                            <ellipse class="body-region" data-part="head" cx="90" cy="30" rx="25" ry="28" />
-                            <text class="body-region-label" x="90" y="35">Head</text>
-                            <rect class="body-region" data-part="head" x="82" y="56" width="16" height="12" rx="4" />
-                            <path class="body-region" data-part="chest" d="M50 70 L130 70 L135 120 L125 160 L55 160 L45 120 Z" />
-                            <text class="body-region-label" x="90" y="115">Chest</text>
-                            <path class="body-region" data-part="abdomen" d="M55 160 L125 160 L120 220 L60 220 Z" />
-                            <text class="body-region-label" x="90" y="195">Abdomen</text>
-                            <rect class="body-region" data-part="arms" x="20" y="72" width="22" height="80" rx="8" />
-                            <rect class="body-region" data-part="arms" x="18" y="148" width="18" height="70" rx="6" />
-                            <rect class="body-region" data-part="arms" x="138" y="72" width="22" height="80" rx="8" />
-                            <rect class="body-region" data-part="arms" x="144" y="148" width="18" height="70" rx="6" />
-                            <path class="body-region" data-part="legs" d="M60 220 L80 220 L78 320 L55 320 L55 220 Z" />
-                            <path class="body-region" data-part="legs" d="M100 220 L120 220 L125 320 L102 320 L100 220 Z" />
-                        </svg>
-                    </div>
-
-                    <div class="body-parts-list">
-                        <button type="button" class="body-part-item" data-part="head">
-                            <span class="name">Head & Brain</span>
-                            <span class="count" id="count-head">0</span>
-                        </button>
-                        <button type="button" class="body-part-item" data-part="chest">
-                            <span class="name">Chest & Lungs</span>
-                            <span class="count" id="count-chest">0</span>
-                        </button>
-                        <button type="button" class="body-part-item" data-part="abdomen">
-                            <span class="name">Abdomen</span>
-                            <span class="count" id="count-abdomen">0</span>
-                        </button>
-                        <button type="button" class="body-part-item" data-part="arms">
-                            <span class="name">Throat & Skin</span>
-                            <span class="count" id="count-arms">0</span>
-                        </button>
-                        <button type="button" class="body-part-item" data-part="legs">
-                            <span class="name">Joints & Muscles</span>
-                            <span class="count" id="count-legs">0</span>
-                        </button>
-                    </div>
-                </div>
-            </aside>
-        </section>
-
-        <section id="results" class="results-section" style="display: none;">
-            <div class="results-layout">
-                <div class="panel conditions-panel">
-                    <div class="conditions-header">
-                        <h3>Conditions that match your symptoms</h3>
-                        <p id="analysis-quality" class="analysis-quality"></p>
-                    </div>
-                    <div id="conditions-cards" class="conditions-cards"></div>
-                </div>
-
-                <div class="panel details-panel">
-                    <div id="patient-summary" class="patient-summary"></div>
-
-                    <div id="condition-detail" class="condition-detail">
-                        <h4>Select a condition</h4>
-                        <p>Choose a condition from the left to see symptom evidence and next-step guidance.</p>
-                    </div>
-
-                    <div class="remedy-block">
-                        <h4>Suggested Home Care</h4>
-                        <ul id="remedies-list"></ul>
-                    </div>
+{% block content %}
+<section class="hero-card card border-0 shadow-lg overflow-hidden">
+    <div class="card-body p-4 p-lg-5">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="badge rounded-pill bg-info-subtle text-info-emphasis mb-3">Digital Triage Platform</span>
+                <h1 class="display-5 fw-bold mb-3">Professional Symptom Analysis For Faster Health Decisions</h1>
+                <p class="lead text-secondary mb-4">Track symptoms, view confidence-based condition matches, and receive actionable precautions in a modern medical dashboard.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg rounded-pill px-4">
+                        <i class="fa-solid fa-user-plus me-2"></i>Create Free Account
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg rounded-pill px-4">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>Login
+                    </a>
                 </div>
             </div>
-            <div class="disclaimer">
-                <p><strong>Important:</strong> This tool provides educational guidance only and cannot confirm diagnosis. Seek a licensed clinician for final medical advice.</p>
+            <div class="col-lg-5">
+                <div class="feature-stack">
+                    <div class="feature-item"><i class="fa-solid fa-magnifying-glass-chart"></i> Interactive symptom search and categories</div>
+                    <div class="feature-item"><i class="fa-solid fa-chart-pie"></i> Confidence-based condition prediction cards</div>
+                    <div class="feature-item"><i class="fa-solid fa-shield-heart"></i> Emergency signal detection and precautions</div>
+                    <div class="feature-item"><i class="fa-solid fa-clock-rotate-left"></i> Personal history and health trend snapshots</div>
+                </div>
             </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="footer-content">
-            <p>&copy; 2026 Health Checker</p>
-            <p>Clinical-style symptom guidance for educational use</p>
         </div>
-    </footer>
+    </div>
+</section>
+{% endblock %}
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>

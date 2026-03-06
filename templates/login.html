@@ -1,23 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Login | Health Checker{% endblock %}
+{% block title %}Login | Health Checker Pro{% endblock %}
 
 {% block content %}
-<div class="auth-card">
-    <h1>Welcome Back</h1>
-    <p>Log in to continue your symptom assessment.</p>
-    {% if error %}
-        <p class="form-error">{{ error }}</p>
-    {% endif %}
-    <form action="{{ url_for('login') }}" method="post" class="auth-form">
-        <label for="email">Email</label>
-        <input id="email" type="email" name="email" autocomplete="email" required>
-
-        <label for="password">Password</label>
-        <input id="password" type="password" name="password" autocomplete="current-password" required>
-
-        <button type="submit" class="primary-btn">Login</button>
-    </form>
-    <p class="auth-switch">No account yet? <a href="{{ url_for('signup') }}">Create one</a></p>
-</div>
+<section class="auth-shell">
+    <div class="card border-0 shadow-lg auth-card-modern">
+        <div class="card-body p-4 p-lg-5">
+            <h1 class="h3 mb-2">Welcome Back</h1>
+            <p class="text-secondary mb-4">Log in to continue your symptom tracking workflow.</p>
+            <form action="{{ url_for('login') }}" method="post" class="vstack gap-3">
+                <div>
+                    <label for="email" class="form-label fw-semibold">Email</label>
+                    <input id="email" type="email" name="email" autocomplete="email" class="form-control form-control-lg" required>
+                </div>
+                <div>
+                    <label for="password" class="form-label fw-semibold">Password</label>
+                    <input id="password" type="password" name="password" autocomplete="current-password" class="form-control form-control-lg" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg rounded-pill pulse-btn">Login</button>
+            </form>
+            <p class="small text-secondary mt-3 mb-0">No account yet? <a href="{{ url_for('signup') }}">Create one</a></p>
+        </div>
+    </div>
+</section>
 {% endblock %}
+
