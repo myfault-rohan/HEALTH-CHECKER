@@ -17,3 +17,7 @@ def create_app():
     init_db(app.config["DATABASE_PATH"])
     register_routes(app)
     return app
+
+
+# Expose a global Flask app for Gunicorn target: `app:app`.
+app = create_app()
