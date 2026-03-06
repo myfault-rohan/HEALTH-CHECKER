@@ -1491,5 +1491,5 @@ def check_symptoms():
     return redirect(url_for("conditions"))
 
 
-if __name__ == '__main__':
-    app.run(debug=os.getenv("FLASK_DEBUG", "0") == "1")
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
