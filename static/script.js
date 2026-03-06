@@ -53,6 +53,127 @@ function setupThemeToggle() {
     });
 }
 
+function setupCustomCursor() {
+    const cursor = document.getElementById("custom-cursor");
+    if (!cursor) {
+        return;
+    }
+    const cursorDot = cursor.querySelector(".cursor-dot");
+    const cursorRing = cursor.querySelector(".cursor-ring");
+    if (!(cursorDot instanceof HTMLElement) || !(cursorRing instanceof HTMLElement)) {
+        return;
+    }
+
+    const supportsFinePointer = window.matchMedia("(pointer: fine)").matches;
+    const supportsHover = window.matchMedia("(hover: hover)").matches;
+    if (!supportsFinePointer || !supportsHover) {
+        return;
+    }
+
+    document.body.classList.add("cursor-enabled");
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let dotX = mouseX;
+    let dotY = mouseY;
+    let ringX = mouseX;
+    let ringY = mouseY;
+    let dotScale = 1;
+    let ringScale = 1;
+    let targetDotScale = 1;
+    let targetRingScale = 1;
+    let isHoveringInteractive = false;
+    const dotMaxTravel = 10;
+
+    const interactiveSelector =
+        "a, button, .btn, [role='button'], input[type='submit'], input[type='button']";
+
+    const animate = () => {
+        // Dot tracks faster, ring trails slightly for a flexible premium effect.
+        dotX += (mouseX - dotX) * 0.44;
+        dotY += (mouseY - dotY) * 0.44;
+        ringX += (mouseX - ringX) * 0.16;
+        ringY += (mouseY - ringY) * 0.16;
+
+        dotScale += (targetDotScale - dotScale) * 0.25;
+        ringScale += (targetRingScale - ringScale) * 0.2;
+
+        // Keep the inner dot moving inside the outer ring.
+        let dotOffsetX = dotX - ringX;
+        let dotOffsetY = dotY - ringY;
+        const offsetDistance = Math.hypot(dotOffsetX, dotOffsetY);
+        const maxDistance = dotMaxTravel * ringScale;
+        if (offsetDistance > maxDistance && offsetDistance > 0) {
+            const clampFactor = maxDistance / offsetDistance;
+            dotOffsetX *= clampFactor;
+            dotOffsetY *= clampFactor;
+        }
+
+        const renderDotX = ringX + dotOffsetX;
+        const renderDotY = ringY + dotOffsetY;
+
+        cursorDot.style.transform =
+            `translate3d(${renderDotX}px, ${renderDotY}px, 0) translate(-50%, -50%) scale(${dotScale})`;
+        cursorRing.style.transform =
+            `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%) scale(${ringScale})`;
+
+        window.requestAnimationFrame(animate);
+    };
+
+    document.addEventListener("mousemove", (event) => {
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+        cursor.classList.add("is-visible");
+        cursor.classList.remove("is-hidden");
+    });
+
+    document.addEventListener("mouseover", (event) => {
+        if (event.target instanceof Element && event.target.closest(interactiveSelector)) {
+            isHoveringInteractive = true;
+            targetDotScale = 1.18;
+            targetRingScale = 1.34;
+        }
+    });
+
+    document.addEventListener("mouseout", (event) => {
+        if (!(event.target instanceof Element)) {
+            return;
+        }
+        if (!event.target.closest(interactiveSelector)) {
+            return;
+        }
+        const next = event.relatedTarget;
+        if (next instanceof Element && next.closest(interactiveSelector)) {
+            return;
+        }
+        isHoveringInteractive = false;
+        targetDotScale = 1;
+        targetRingScale = 1;
+    });
+
+    document.addEventListener("mousedown", () => {
+        targetDotScale = Math.max(0.9, targetDotScale - 0.12);
+        targetRingScale = Math.max(1.05, targetRingScale - 0.18);
+    });
+
+    document.addEventListener("mouseup", () => {
+        targetDotScale = isHoveringInteractive ? 1.18 : 1;
+        targetRingScale = isHoveringInteractive ? 1.34 : 1;
+    });
+
+    document.addEventListener("mouseleave", () => {
+        cursor.classList.add("is-hidden");
+        cursor.classList.remove("is-visible");
+    });
+
+    document.addEventListener("mouseenter", () => {
+        cursor.classList.add("is-visible");
+        cursor.classList.remove("is-hidden");
+    });
+
+    animate();
+}
+
 function setupSymptomsPage() {
     const form = document.getElementById("symptom-form");
     if (!form) {
@@ -221,6 +342,7 @@ window.addEventListener("pageshow", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+    setupCustomCursor();
     setupThemeToggle();
     setupSymptomsPage();
     setupContactPage();

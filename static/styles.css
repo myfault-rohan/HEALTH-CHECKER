@@ -22,6 +22,11 @@ body {
     overflow-x: hidden;
 }
 
+body.cursor-enabled,
+body.cursor-enabled * {
+    cursor: none !important;
+}
+
 h1,
 h2,
 h3,
@@ -313,6 +318,54 @@ h6,
     border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
+.custom-cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 5000;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.16s ease;
+    will-change: transform, opacity;
+}
+
+.custom-cursor .cursor-dot,
+.custom-cursor .cursor-ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.custom-cursor .cursor-dot {
+    width: 8px;
+    height: 8px;
+    background: #6cc5ff;
+    box-shadow: 0 0 10px rgba(108, 197, 255, 0.7);
+}
+
+.custom-cursor .cursor-ring {
+    width: 68px;
+    height: 68px;
+    border: 1.6px solid rgba(108, 197, 255, 0.95);
+    box-shadow:
+        0 0 0 6px rgba(88, 185, 255, 0.11),
+        0 0 22px rgba(88, 185, 255, 0.4);
+    background: rgba(88, 185, 255, 0.08);
+}
+
+.custom-cursor.is-visible {
+    opacity: 1;
+}
+
+.custom-cursor.is-hidden {
+    opacity: 0;
+}
+
 @media (max-width: 992px) {
     .workflow-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -327,6 +380,17 @@ h6,
     .orb-1,
     .orb-2 {
         opacity: 0.2;
+    }
+}
+
+@media (hover: none), (pointer: coarse) {
+    .custom-cursor {
+        display: none;
+    }
+
+    body.cursor-enabled,
+    body.cursor-enabled * {
+        cursor: auto !important;
     }
 }
 
