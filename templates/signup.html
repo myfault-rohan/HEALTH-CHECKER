@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Signup | Health Checker{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <h1>Create Account</h1>
+    <p>Securely save your symptom-check history.</p>
+    {% if error %}
+        <p class="form-error">{{ error }}</p>
+    {% endif %}
+    <form action="{{ url_for('signup') }}" method="post" class="auth-form">
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" autocomplete="email" required>
+
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password" autocomplete="new-password" minlength="6" required>
+
+        <label for="confirm_password">Confirm Password</label>
+        <input id="confirm_password" type="password" name="confirm_password" autocomplete="new-password" minlength="6" required>
+
+        <button type="submit" class="primary-btn">Create Account</button>
+    </form>
+    <p class="auth-switch">Already registered? <a href="{{ url_for('login') }}">Login</a></p>
+</div>
+{% endblock %}

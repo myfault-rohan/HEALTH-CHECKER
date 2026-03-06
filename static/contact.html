@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Health Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Health Checker</h1>
+            <nav>
+                <a href="{{ url_for('index') }}">Symptom Checker</a>
+                <a href="{{ url_for('about') }}">About</a>
+                <a href="{{ url_for('contact') }}">Contact</a>
+                {% if session.get('logged_in') %}
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h2>Contact Us</h2>
+            <p>We're here to help. Reach out to us with any questions or feedback.</p>
+        </div>
+
+        <div class="contact-content">
+            <div class="contact-info">
+                <h3>Get in Touch</h3>
+                <p style="margin-bottom: 20px;">Have a question about the symptom checker or need technical support? Our team is ready to assist you.</p>
+                
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <h4>Email Us</h4>
+                        <p>support@healthchecker.example.com</p>
+                        <p>info@healthchecker.example.com</p>
+                    </div>
+                    <div class="contact-item">
+                        <h4>Call Us</h4>
+                        <p>+1 (555) 123-4567</p>
+                        <p>Mon-Fri, 9am - 5pm EST</p>
+                    </div>
+                    <div class="contact-item">
+                        <h4>Location</h4>
+                        <p>123 Health Tech Blvd</p>
+                        <p>Innovation City, CA 90210</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding: 15px; background-color: #e9f5ff; border-radius: 4px; border-left: 4px solid #0079c2;">
+                    <h4>Medical Emergency?</h4>
+                    <p>If you are experiencing a medical emergency, please do not use this form. Call 911 or your local emergency number immediately.</p>
+                </div>
+            </div>
+
+            <div class="contact-form">
+                <h3>Send a Message</h3>
+                <form id="message-form">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required placeholder="Your Name">
+
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+
+                    <label for="subject">Subject</label>
+                    <select id="subject" name="subject">
+                        <option value="general">General Inquiry</option>
+                        <option value="support">Technical Support</option>
+                        <option value="feedback">Feedback</option>
+                    </select>
+
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" rows="5" required placeholder="How can we help you?"></textarea>
+
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Health Checker. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

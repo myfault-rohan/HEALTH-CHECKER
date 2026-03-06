@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Info | Health Checker{% endblock %}
+
+{% block content %}
+<section class="page-card">
+    <div class="page-head">
+        <h1>Step 1: Patient Information</h1>
+        <p>Set core details to improve condition confidence and urgency prioritization.</p>
+    </div>
+
+    {% if error %}
+        <p class="form-error">{{ error }}</p>
+    {% endif %}
+
+    <form action="{{ url_for('info') }}" method="post" class="info-form">
+        <div class="form-row">
+            <label for="age">Age</label>
+            <input id="age" type="number" name="age" min="1" max="120" value="{{ age }}" required>
+        </div>
+
+        <div class="form-row">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender" required>
+                <option value="">Select gender</option>
+                <option value="male" {% if gender == 'male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if gender == 'female' %}selected{% endif %}>Female</option>
+                <option value="other" {% if gender == 'other' %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+
+        <button type="submit" class="primary-btn">Continue to Symptoms</button>
+    </form>
+
+    <div class="notice-box">
+        This checker provides educational guidance and does not replace clinical diagnosis.
+    </div>
+</section>
+{% endblock %}

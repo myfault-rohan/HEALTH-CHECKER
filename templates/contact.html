@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Contact | Health Checker{% endblock %}
+
+{% block content %}
+<section class="page-card">
+    <div class="page-head">
+        <h1>Contact</h1>
+        <p>Reach support for technical issues or platform feedback.</p>
+    </div>
+
+    <div class="contact-grid">
+        <article class="contact-card">
+            <h3>Support Desk</h3>
+            <p>Email: support@healthchecker.local</p>
+            <p>Phone: +1 (987) 654-3210</p>
+            <p>Emergency line: +1 (555) 911-0000</p>
+        </article>
+
+        <article class="contact-card">
+            <h3>Send a Message</h3>
+            <form id="message-form" class="contact-form">
+                <label for="name">Name</label>
+                <input id="name" type="text" required>
+
+                <label for="contact-email">Email</label>
+                <input id="contact-email" type="email" required>
+
+                <label for="message">Message</label>
+                <textarea id="message" rows="4" required></textarea>
+
+                <button class="primary-btn" type="submit">Send Message</button>
+            </form>
+        </article>
+    </div>
+</section>
+{% endblock %}

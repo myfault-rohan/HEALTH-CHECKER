@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Profile | Health Checker{% endblock %}
+
+{% block content %}
+<section class="page-card">
+    <div class="page-head">
+        <h1>History</h1>
+        <p>Your recent symptom checks and generated guidance.</p>
+    </div>
+
+    {% if history %}
+        <div class="history-stack">
+            {% for entry in history %}
+                <article class="history-card">
+                    <header>
+                        <h3>{{ entry.date }}</h3>
+                        <span>{{ entry.symptoms|length }} symptoms</span>
+                    </header>
+
+                    <div class="history-section">
+                        <h4>Symptoms</h4>
+                        <ul class="chip-list">
+                            {% for symptom in entry.symptoms %}
+                                <li>{{ symptom }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="history-section">
+                        <h4>Condition Matches</h4>
+                        <ul class="simple-list">
+                            {% for condition in entry.conditions %}
+                                <li>{{ condition }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="history-section">
+                        <h4>Remedies</h4>
+                        <ul class="simple-list">
+                            {% for remedy in entry.remedies %}
+                                <li>{{ remedy }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-note">No history found yet.</p>
+        <a class="primary-btn" href="{{ url_for('info') }}">Start Symptom Check</a>
+    {% endif %}
+</section>
+{% endblock %}

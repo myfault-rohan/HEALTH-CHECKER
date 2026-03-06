@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}About | Health Checker{% endblock %}
+
+{% block content %}
+<section class="page-card">
+    <div class="page-head">
+        <h1>About Health Checker</h1>
+        <p>A structured symptom-check workflow designed for educational triage support.</p>
+    </div>
+
+    <div class="info-grid">
+        <article>
+            <h3>How It Works</h3>
+            <p>The checker compares your selected symptoms against weighted condition profiles, applies demographic adjustments, detects emergency patterns, and organizes result confidence by severity and evidence overlap.</p>
+        </article>
+        <article>
+            <h3>Medical Safety</h3>
+            <p>Outputs are guidance only and not a clinical diagnosis. Always consult a licensed clinician for persistent, severe, or uncertain symptoms.</p>
+        </article>
+        <article>
+            <h3>Ayurvedic Layer</h3>
+            <p>The treatment step composes a structured Ayurvedic paragraph from matched remedies, plus doctor-escalation and lifestyle guidance.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

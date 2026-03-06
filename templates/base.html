@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Health Checker{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body data-page="{{ current_step or 'general' }}">
+    <header class="site-header">
+        <div class="site-header-inner">
+            <a class="brand" href="{{ url_for('info') }}">Health Checker</a>
+            <nav class="site-nav">
+                {% if session.get('logged_in') %}
+                    <a href="{{ url_for('info') }}">Checker</a>
+                    <a href="{{ url_for('profile') }}">Profile</a>
+                    <a href="{{ url_for('about') }}">About</a>
+                    <a href="{{ url_for('contact') }}">Contact</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('signup') }}">Signup</a>
+                {% endif %}
+                <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle night mode">Night</button>
+            </nav>
+        </div>
+    </header>
+
+    {% if show_steps %}
+        {% set active_condition = session.get('active_condition') %}
+        <section class="step-shell">
+            <ol class="step-nav" id="workflow-steps">
+                <li class="step-item {{ 'is-active' if current_step == 'info' else ('is-done' if current_step in ['symptoms', 'conditions', 'details', 'treatment'] else '') }}">
+                    <a href="{{ url_for('info') }}">Info</a>
+                </li>
+                <li class="step-item {{ 'is-active' if current_step == 'symptoms' else ('is-done' if current_step in ['conditions', 'details', 'treatment'] else '') }}">
+                    <a href="{{ url_for('symptoms') }}">Symptoms</a>
+                </li>
+                <li class="step-item {{ 'is-active' if current_step == 'conditions' else ('is-done' if current_step in ['details', 'treatment'] else '') }}">
+                    <a href="{{ url_for('conditions') }}">Conditions</a>
+                </li>
+                <li class="step-item {{ 'is-active' if current_step == 'details' else ('is-done' if current_step in ['treatment'] else '') }}">
+                    <a href="{{ url_for('details', condition_name=active_condition) if active_condition else url_for('conditions') }}">Details</a>
+                </li>
+                <li class="step-item {{ 'is-active' if current_step == 'treatment' else '' }}">
+                    <a href="{{ url_for('treatment', condition_name=active_condition) if active_condition else url_for('conditions') }}">Treatment</a>
+                </li>
+            </ol>
+        </section>
+    {% endif %}
+
+    <main class="main-shell">
+        {% if show_sidebar %}
+            <div class="checker-layout">
+                <section class="checker-content">
+        {% else %}
+            <section class="content-single">
+        {% endif %}
+                    {% block content %}{% endblock %}
+        {% if show_sidebar %}
+                </section>
+                <aside class="summary-sidebar">
+                    <h3>Patient Snapshot</h3>
+                    <div class="summary-row">
+                        <span>Age</span>
+                        <strong>{{ sidebar.age }}</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Gender</span>
+                        <strong>{{ sidebar.gender }}</strong>
+                    </div>
+                    <div class="summary-divider"></div>
+                    <h4>Selected Symptoms</h4>
+                    {% if sidebar.selected_symptoms %}
+                        <ul class="sidebar-tags">
+                            {% for symptom in sidebar.selected_symptoms %}
+                                <li>{{ symptom }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="sidebar-muted">No symptoms selected.</p>
+                    {% endif %}
+                    <a class="start-over-btn" href="{{ url_for('start_over') }}">Start Over</a>
+                </aside>
+            </div>
+        {% else %}
+            </section>
+        {% endif %}
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

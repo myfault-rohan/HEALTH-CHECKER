@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Health Profile - Symptom Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Health Checker</h1>
+            <nav>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('about') }}">About</a>
+                <a href="{{ url_for('contact') }}">Contact</a>
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>My Health Profile</h2>
+            <p>View your symptom history and past recommendations.</p>
+        </section>
+
+        <section class="profile-content">
+            {% if history %}
+                <div class="history-list">
+                    {% for entry in history %}
+                        <div class="history-card">
+                            <div class="history-header">
+                                <span class="history-date">{{ entry.date }}</span>
+                                <span class="symptom-count">{{ entry.symptoms|length }} Symptoms Reported</span>
+                            </div>
+                            <div class="history-body">
+                                <div class="history-section">
+                                    <h4>Symptoms:</h4>
+                                    <p>
+                                        {% for symptom in entry.symptoms %}
+                                            <span class="tag">{{ symptom }}</span>
+                                        {% endfor %}
+                                    </p>
+                                </div>
+                                <div class="history-section">
+                                    <h4>Possible Conditions:</h4>
+                                    <ul>
+                                        {% for condition in entry.conditions %}
+                                            <li>{{ condition }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="history-section">
+                                    <h4>Suggested Remedies:</h4>
+                                    <ul>
+                                        {% for remedy in entry.remedies %}
+                                            <li>{{ remedy }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-history">
+                    <p>You haven't checked any symptoms yet.</p>
+                    <a href="{{ url_for('index') }}" class="check-button" style="display:inline-block; text-align:center; text-decoration:none; margin-top:20px;">Check Symptoms Now</a>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Health Checker. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

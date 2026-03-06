@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Symptoms | Health Checker{% endblock %}
+
+{% block content %}
+<section class="page-card">
+    <div class="page-head">
+        <h1>Step 2: Select Symptoms</h1>
+        <p>Search and add symptoms. More specific symptom sets usually produce higher confidence.</p>
+    </div>
+
+    <div class="progress-wrap">
+        <div class="progress-track">
+            <div class="progress-fill" id="symptom-progress-fill" style="width: 0%;"></div>
+        </div>
+        <p><span id="symptom-count">0</span> symptoms selected</p>
+    </div>
+
+    <div class="search-wrap">
+        <input type="text" id="symptom-search" placeholder="Search symptoms (e.g., fever, cough, dizziness)" autocomplete="off">
+        <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+    </div>
+
+    <div class="body-filter" id="body-filter">
+        <button type="button" data-part="head">Head</button>
+        <button type="button" data-part="chest">Chest</button>
+        <button type="button" data-part="abdomen">Abdomen</button>
+        <button type="button" data-part="arms">Throat/Skin</button>
+        <button type="button" data-part="legs">Joints/Muscles</button>
+    </div>
+
+    <div id="selected-symptoms" class="selected-symptoms"></div>
+
+    <form id="symptom-form" action="{{ url_for('check_symptoms') }}" method="post">
+        <section class="detail-panel">
+            <h3>Symptom Specific Details</h3>
+            <p>Optional details improve matching confidence and emergency triage.</p>
+
+            <div class="detail-grid">
+                <div class="detail-field" data-requires="cough">
+                    <label for="cough_type">Cough type</label>
+                    <select id="cough_type" name="cough_type">
+                        <option value="">Select</option>
+                        <option value="dry">Dry cough</option>
+                        <option value="wet">Wet cough</option>
+                    </select>
+                </div>
+
+                <div class="detail-field" data-requires="headache,head ace,head ache">
+                    <label for="headache_type">Headache type</label>
+                    <select id="headache_type" name="headache_type">
+                        <option value="">Select</option>
+                        <option value="pressure">Pressure / tightness</option>
+                        <option value="throbbing">Throbbing / pulsating</option>
+                    </select>
+                </div>
+
+                <div class="detail-field" data-requires="shortness of breath">
+                    <label for="breath_severity">Breath severity</label>
+                    <select id="breath_severity" name="breath_severity">
+                        <option value="">Select</option>
+                        <option value="mild">Mild</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="severe">Severe</option>
+                    </select>
+                </div>
+
+                <div class="detail-field" data-requires="chest pain">
+                    <label for="chest_type">Chest pain type</label>
+                    <select id="chest_type" name="chest_type">
+                        <option value="">Select</option>
+                        <option value="pressure">Pressure / heavy</option>
+                        <option value="sharp">Sharp / stabbing</option>
+                        <option value="burning">Burning</option>
+                    </select>
+                </div>
+
+                <div class="detail-field" data-requires="fever">
+                    <label for="fever_temp">Fever temperature (F)</label>
+                    <input id="fever_temp" name="fever_temp" type="number" step="0.1" min="95" max="110" placeholder="e.g. 101.4">
+                </div>
+            </div>
+        </section>
+
+        <div id="symptom-hidden-inputs"></div>
+        <div class="action-row">
+            <a href="{{ url_for('start_over') }}" class="ghost-btn">Start Over</a>
+            <button type="submit" class="primary-btn">Analyze Symptoms</button>
+        </div>
+    </form>
+</section>
+
+<script id="symptom-database" type="application/json">{{ symptom_names | tojson }}</script>
+<script id="initial-symptoms" type="application/json">{{ selected_symptoms | tojson }}</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Details | Health Checker{% endblock %}
+
+{% block content %}
+<section class="page-card">
+    <div class="page-head">
+        <h1>Step 4: Condition Detail</h1>
+        <p>Detailed evidence and urgency context for the selected match.</p>
+    </div>
+
+    <article class="detail-card">
+        <h2>{{ condition.name }}</h2>
+        <p class="detail-intro">{{ condition.description }}</p>
+
+        <div class="detail-stats">
+            <div>
+                <span>Confidence</span>
+                <strong>{{ condition.confidence }}%</strong>
+            </div>
+            <div>
+                <span>Match Label</span>
+                <strong>{{ condition.match_label }}</strong>
+            </div>
+            <div>
+                <span>Urgency</span>
+                <strong>{{ condition.urgency|capitalize }}</strong>
+            </div>
+        </div>
+
+        <h3>Evidence Symptoms</h3>
+        <ul class="chip-list">
+            {% for item in condition.evidence %}
+                <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+
+        {% if condition.note %}
+            <h3>Notes</h3>
+            <p class="note-box">{{ condition.note }}</p>
+        {% endif %}
+
+        <div class="action-row">
+            <a class="ghost-btn" href="{{ url_for('conditions') }}">Back to Conditions</a>
+            <a class="primary-btn" href="{{ url_for('treatment', condition_name=condition.name) }}">Go to Treatment</a>
+        </div>
+    </article>
+</section>
+{% endblock %}

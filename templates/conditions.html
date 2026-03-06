@@ -1,0 +1,35 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Conditions | Health Checker{% endblock %}
+
+{% block content %}
+<section class="page-card">
+    <div class="page-head">
+        <h1>Step 3: Condition Matches</h1>
+        <p>{{ analysis.suggestion or 'Review the ranked condition matches below.' }}</p>
+    </div>
+
+    {% if condition_details %}
+        <div class="conditions-grid">
+            {% for condition in condition_details %}
+                {% set label_key = condition.match_label.lower() %}
+                <article class="condition-card {{ condition.urgency }} {{ 'strong' if 'strong' in label_key else ('fair' if 'fair' in label_key else 'possible') }}">
+                    <div class="condition-top">
+                        <h3>{{ condition.name }}</h3>
+                        <span class="urgency-badge urgency-{{ condition.urgency }}">{{ condition.urgency|capitalize }} urgency</span>
+                    </div>
+                    <p class="condition-meta">{{ condition.confidence }}% confidence - {{ condition.match_label }}</p>
+                    <div class="confidence-track">
+                        <div class="confidence-fill" style="width: {{ condition.confidence }}%"></div>
+                    </div>
+                    <div class="condition-actions">
+                        <a href="{{ url_for('details', condition_name=condition.name) }}" class="arrow-link">View Details -></a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-note">No condition matches found yet. Go back and add more symptoms.</p>
+    {% endif %}
+</section>
+{% endblock %}
