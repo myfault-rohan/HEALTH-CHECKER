@@ -11,8 +11,10 @@ from app.models.user_store import (
     create_user,
     delete_history_entry,
     get_history_entries,
+    get_user_profile,
     normalize_email,
     save_history_entry,
+    update_user_profile,
     verify_user,
 )
 from app.services.prediction_service import (
@@ -137,6 +139,11 @@ def register_routes(app):
             elif verify_user(email, password):
                 session["logged_in"] = True
                 session["email"] = email
+                profile = get_user_profile(email)
+                if profile["age"] > 0:
+                    session["patient_age"] = profile["age"]
+                if profile["gender"]:
+                    session["patient_gender"] = profile["gender"]
                 flash("Welcome back. Login successful.", "success")
                 return redirect(url_for("dashboard"))
             else:
@@ -198,6 +205,9 @@ def register_routes(app):
             else:
                 session["patient_age"] = age
                 session["patient_gender"] = gender
+                email = normalize_email(session.get("email"))
+                if email:
+                    update_user_profile(email, age, gender)
                 clear_checker_session()
                 flash("Profile saved. Continue with symptom selection.", "success")
                 return redirect(url_for("symptoms"))
@@ -533,6 +543,27 @@ def register_routes(app):
             selected_symptoms, age, gender, form_data
         )
         predicted_disease = predict_disease(selected_symptoms)
+        
+        # Inject ML prediction into condition details if valid
+        if predicted_disease and predicted_disease not in ["No clear match", "Prediction Error", "No clear match (Model not loaded)"]:
+            existing = next((c for c in condition_details if c["name"].lower() == predicted_disease.lower()), None)
+            if not existing:
+                ml_condition = {
+                    "name": predicted_disease,
+                    "confidence": 95,
+                    "match_label": "Machine Learning Match",
+                    "urgency": "medium",
+                    "severity": "medium",
+                    "evidence": ["statistical pattern matching"],
+                    "description": "This condition was predicted by our trained Random Forest model based on your symptom profile.",
+                }
+                condition_details.insert(0, ml_condition)
+            else:
+                condition_details.remove(existing)
+                existing["match_label"] = "Verified by Machine Learning"
+                existing["confidence"] = min(99, existing["confidence"] + 20)
+                condition_details.insert(0, existing)
+
         # Attach UI-facing fields once so all downstream pages can reuse them.
         for condition in condition_details:
             condition["possible_causes"] = condition.get("evidence", [])

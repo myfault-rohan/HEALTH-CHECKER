@@ -3,29 +3,77 @@
 {% block title %}Create Account | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="auth-shell">
-    <div class="card border-0 shadow-lg auth-card-modern">
-        <div class="card-body p-4 p-lg-5">
-            <h1 class="h3 mb-2">Create Account</h1>
-            <p class="text-secondary mb-4">Securely save your checks and revisit past analyses.</p>
-            <form action="{{ url_for('signup') }}" method="post" class="vstack gap-3">
-                <div>
-                    <label for="email" class="form-label fw-semibold">Email</label>
-                    <input id="email" type="email" name="email" autocomplete="email" class="form-control form-control-lg" required>
+<div class="auth-page-wrapper">
+    <div class="auth-container">
+        <div class="auth-card-wrapper">
+            <div class="auth-card card border-0 shadow-lg">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="text-center mb-4">
+                        <div class="auth-icon mb-3">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                        <h2 class="h4 mb-1 fw-bold">Create a New Account</h2>
+                        <p class="text-secondary small mb-0">Join Health Checker Pro today</p>
+                    </div>
+                    
+                    <form action="{{ url_for('signup') }}" method="post" class="vstack gap-3">
+                        <div>
+                            <label for="email" class="form-label fw-semibold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fa-regular fa-envelope text-muted"></i>
+                                </span>
+                                <input id="email" type="email" name="email" autocomplete="email" placeholder="you@example.com" class="form-control border-start-0" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="password" class="form-label fw-semibold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fa-solid fa-lock text-muted"></i>
+                                </span>
+                                <input id="password" type="password" name="password" autocomplete="new-password" placeholder="At least 6 characters" class="form-control border-start-0" minlength="6" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="confirm_password" class="form-label fw-semibold">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fa-solid fa-lock text-muted"></i>
+                                </span>
+                                <input id="confirm_password" type="password" name="confirm_password" autocomplete="new-password" placeholder="Re-enter your password" class="form-control border-start-0" minlength="6" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label small text-secondary" for="terms">
+                                I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill mt-2">
+                            <i class="fa-solid fa-user-plus me-2"></i>Create Account
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <p class="text-center mb-0">
+                        <span class="text-secondary small">Already registered?</span>
+                        <a href="{{ url_for('login') }}" class="small fw-semibold text-decoration-none">Sign in</a>
+                    </p>
                 </div>
-                <div>
-                    <label for="password" class="form-label fw-semibold">Password</label>
-                    <input id="password" type="password" name="password" autocomplete="new-password" class="form-control form-control-lg" minlength="6" required>
-                </div>
-                <div>
-                    <label for="confirm_password" class="form-label fw-semibold">Confirm Password</label>
-                    <input id="confirm_password" type="password" name="confirm_password" autocomplete="new-password" class="form-control form-control-lg" minlength="6" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-lg rounded-pill pulse-btn">Create Account</button>
-            </form>
-            <p class="small text-secondary mt-3 mb-0">Already registered? <a href="{{ url_for('login') }}">Login</a></p>
+            </div>
+            
+            <div class="auth-footer text-center mt-4">
+                <p class="text-secondary small mb-0">
+                    <i class="fa-solid fa-shield-halved me-1"></i>
+                    Your health data is secure and private
+                </p>
+            </div>
         </div>
     </div>
-</section>
+</div>
 {% endblock %}
 

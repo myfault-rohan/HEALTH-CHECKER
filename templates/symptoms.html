@@ -21,41 +21,27 @@
             <input type="text" class="form-control form-control-lg" id="symptom-search" placeholder="Search symptoms (e.g., fever, cough, dizziness)">
         </div>
 
-        <div class="d-flex flex-wrap gap-2 mb-3" id="category-filter">
-            {% for category in symptom_categories.keys() %}
-                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill category-btn {% if loop.first %}active{% endif %}" data-category="{{ category }}">
-                    {{ category|replace('_', ' ')|title }}
-                </button>
-            {% endfor %}
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill category-btn" data-category="all">All</button>
-        </div>
-
         <form id="symptom-form" action="{{ url_for('check_symptoms') }}" method="post">
-            {% for category, symptoms in symptom_categories.items() %}
-                <div class="symptom-category mb-4 {% if not loop.first %}d-none{% endif %}" data-category="{{ category }}">
-                    <h2 class="h6 text-uppercase text-secondary mb-3">{{ category|replace('_', ' ')|title }}</h2>
-                    <div class="row g-3">
-                        {% for symptom in symptoms %}
-                            {% set symptom_id = ('symptom-' ~ symptom)|replace(' ', '-') %}
-                            <div class="col-sm-6 col-lg-4 symptom-item" data-symptom="{{ symptom }}">
-                                <label class="card h-100 border-0 shadow-sm symptom-card" for="{{ symptom_id }}">
-                                    <div class="card-body py-3">
-                                        <input
-                                            class="form-check-input symptom-checkbox me-2"
-                                            type="checkbox"
-                                            id="{{ symptom_id }}"
-                                            name="symptoms"
-                                            value="{{ symptom }}"
-                                            {% if symptom in selected_symptoms %}checked{% endif %}
-                                        >
-                                        <span>{{ symptom|title }}</span>
-                                    </div>
-                                </label>
+            <div class="row g-3 mb-4" id="all-symptoms-container">
+                {% for symptom in symptom_names %}
+                    {% set symptom_id = ('symptom-' ~ symptom)|replace(' ', '-') %}
+                    <div class="col-sm-6 col-md-4 symptom-item d-none" data-symptom="{{ symptom|lower }}">
+                        <label class="card h-100 shadow-sm symptom-card cursor-pointer border {% if symptom in selected_symptoms %}border-primary bg-primary-subtle{% else %}border-0{% endif %}" style="cursor: pointer;" for="{{ symptom_id }}">
+                            <div class="card-body py-3 d-flex align-items-center">
+                                <input
+                                    class="d-none form-check-input symptom-checkbox me-2"
+                                    type="checkbox"
+                                    id="{{ symptom_id }}"
+                                    name="symptoms"
+                                    value="{{ symptom }}"
+                                    {% if symptom in selected_symptoms %}checked{% endif %}
+                                >
+                                <span class="fw-medium">{{ symptom|title }}</span>
                             </div>
-                        {% endfor %}
+                        </label>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
 
             <section class="card border-0 bg-light-subtle mb-4">
                 <div class="card-body">

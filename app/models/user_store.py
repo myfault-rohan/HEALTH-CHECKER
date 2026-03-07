@@ -29,6 +29,8 @@ def init_db(database_path):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
+                age INTEGER,
+                gender TEXT,
                 created_at TEXT NOT NULL
             )
             """
@@ -54,12 +56,14 @@ def create_user(email, password):
     with get_db_connection() as connection:
         connection.execute(
             """
-            INSERT INTO users (email, password_hash, created_at)
-            VALUES (?, ?, ?)
+            INSERT INTO users (email, password_hash, age, gender, created_at)
+            VALUES (?, ?, ?, ?, ?)
             """,
             (
                 normalize_email(email),
                 generate_password_hash(password),
+                0,
+                "",
                 datetime.utcnow().isoformat(timespec="seconds"),
             ),
         )
@@ -75,6 +79,26 @@ def verify_user(email, password):
     if not row:
         return False
     return check_password_hash(row["password_hash"], password)
+
+
+def get_user_profile(email):
+    with get_db_connection() as connection:
+        row = connection.execute(
+            "SELECT age, gender FROM users WHERE email = ?",
+            (normalize_email(email),),
+        ).fetchone()
+    if row:
+        return {"age": row["age"] or 0, "gender": row["gender"] or ""}
+    return {"age": 0, "gender": ""}
+
+
+def update_user_profile(email, age, gender):
+    with get_db_connection() as connection:
+        connection.execute(
+            "UPDATE users SET age = ?, gender = ? WHERE email = ?",
+            (age, gender, normalize_email(email)),
+        )
+        connection.commit()
 
 
 def save_history_entry(email, payload):

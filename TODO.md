@@ -1,40 +1,34 @@
-# Health Checker Improvement Plan
+# Login/Signup Page Redesign - COMPLETED ✅
 
-## Completed Tasks:
+## Task: Remove bulb animation and create normal login/signup pages
 
-### 1. app.py
-- [x] Modified remedies format to include authentic Ayurvedic context/paragraph format
-- [x] Remedies are now grouped by type (herbal, dietary, lifestyle, hydration) and displayed as flowing paragraphs
+## Summary
+Removed the bulb animation from login/signup pages and created clean, modern pages matching the website's medical theme. Also enhanced the custom cursor with modern interactive effects.
 
-### 2. templates/index.html
-- [x] Removed `.symptoms-grid` containing all symptom checkboxes
-- [x] Kept only `.search-container` with search bar
-- [x] Added new autocomplete dropdown container for search suggestions
-- [x] Added selected symptoms chips container below search bar
+## Changes Made
 
-### 3. static/script.js
-- [x] Created autocomplete functionality with symptom names database
-- [x] Handle click on autocomplete suggestion to add symptom
-- [x] Allow multiple symptoms to be added
-- [x] Removed checkbox-related event handlers
-- [x] Updated form submission to work with search-based symptoms
+### 1. templates/login.html
+- Removed bulb animation HTML elements
+- Created clean centered login card
 
-### 4. static/styles.css
-- [x] Added styles for autocomplete dropdown
-- [x] Added styles for selected symptoms chips with remove button
-- [x] Updated remedy-block for paragraph display with gradient background and accent border
-- [x] Made condition cards more readable with improved styling
+### 2. templates/signup.html  
+- Updated to match login page style
 
-## Summary of Changes:
-1. **Ayurvedic Solutions in Paragraph Format**: Remedies are now displayed as authentic flowing paragraphs with categorized sections (🌿 Herbal Remedies, 🍎 Dietary Recommendations, 🧘 Lifestyle & Rest, 💧 Hydration)
+### 3. static/styles.css
+- Removed all bulb animation CSS
+- Added new auth-page styles
+- Enhanced cursor styles:
+  - Larger outer ring (96px → 120px on hover)
+  - Glowing dot with box-shadow
+  - Pulsing animation effect
+  - Trail effect CSS
+  - Hover state for interactive elements
 
-2. **Fixed Condition Names Readability**: Condition cards now have improved typography with clear visual hierarchy
+### 4. static/script.js
+- Added cursor tracking JavaScript
+- Added trailing particles (8 dots)
+- Added hover detection for buttons/links
+- Smooth animation with requestAnimationFrame
 
-3. **Removed Symptom Checkboxes**: The entire checkbox grid has been removed. Users now only see a search bar.
+## Status: COMPLETED ✅
 
-4. **Google-like Autocomplete Search**:
-   - Type in the search bar to see matching symptom suggestions
-   - Click a suggestion to add it to selected symptoms
-   - Press Enter to add the closest match
-   - Click × on a chip to remove a symptom
-   - Can add multiple symptoms and continue typing more

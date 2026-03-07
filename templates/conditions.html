@@ -20,8 +20,13 @@
 {% if condition_details %}
     <section class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
-            <p class="text-uppercase small text-secondary mb-1">Rule-Based AI Prediction</p>
+            <p class="text-uppercase small text-secondary mb-1">Machine Learning Prediction</p>
             <h2 class="h3 mb-0 text-primary">{{ predicted_disease }}</h2>
+            {% if predicted_disease and predicted_disease not in ["No clear match", "Prediction Error", "No clear match (Model not loaded)"] %}
+                <a href="{{ url_for('treatment', condition_name=predicted_disease) }}" class="btn btn-outline-primary btn-sm rounded-pill mt-3">
+                    <i class="fa-solid fa-pills me-1"></i> View Treatment Options
+                </a>
+            {% endif %}
         </div>
     </section>
 
