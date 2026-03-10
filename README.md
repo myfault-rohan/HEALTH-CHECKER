@@ -158,7 +158,7 @@ http://127.0.0.1:10000
 ## Deployment on Render
 
 - Build command: `pip install -r requirements.txt`
-- Start command: `gunicorn app:app`
+- Start command: `gunicorn wsgi:app`
 
 ## Training the model
 
