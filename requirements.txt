@@ -3,3 +3,5 @@ gunicorn
 scikit-learn
 pandas
 numpy
+flask-limiter
+reportlab

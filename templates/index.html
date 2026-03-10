@@ -1,34 +1,77 @@
 {% extends "base.html" %}
 
-{% block title %}Health Checker Pro | Smart Symptom Insights{% endblock %}
+{% block title %}Health Checker Pro | Interactive Symptom Intelligence{% endblock %}
 
 {% block content %}
-<section class="hero-card card border-0 shadow-lg overflow-hidden">
-    <div class="card-body p-4 p-lg-5">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-7">
-                <span class="badge rounded-pill bg-info-subtle text-info-emphasis mb-3">Digital Triage Platform</span>
-                <h1 class="display-5 fw-bold mb-3">Professional Symptom Analysis For Faster Health Decisions</h1>
-                <p class="lead text-secondary mb-4">Track symptoms, view confidence-based condition matches, and receive actionable precautions in a modern medical dashboard.</p>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg rounded-pill px-4">
-                        <i class="fa-solid fa-user-plus me-2"></i>Create Free Account
-                    </a>
-                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg rounded-pill px-4">
-                        <i class="fa-solid fa-right-to-bracket me-2"></i>Login
-                    </a>
+<section class="landing-hero glass-panel border-0 mb-4" data-aos="fade-up">
+    <div class="floating-icon"><i class="fa-solid fa-heart-circle-bolt"></i></div>
+    <div class="floating-icon"><i class="fa-solid fa-stethoscope"></i></div>
+    <div class="floating-icon"><i class="fa-solid fa-pills"></i></div>
+    <div class="floating-icon"><i class="fa-solid fa-brain"></i></div>
+
+    <div class="container h-100 d-flex align-items-center">
+        <div class="row align-items-center g-5 w-100">
+            <div class="col-lg-7 text-white">
+                <span class="soft-badge mb-3">College Project Showcase</span>
+                <h1 class="hero-title mb-3">A modern health triage experience built to impress.</h1>
+                <div class="h3 typewriter-line mb-4"><span id="hero-typewriter"></span><span class="ms-1">|</span></div>
+                <p class="lead mb-4 text-white-50">Track symptoms, understand likely condition patterns, generate polished PDF reports, and review analytics in one elegant ML-powered workflow.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg px-4">Get Started Free</a>
+                    <a href="{{ url_for('about') }}" class="btn btn-outline-light btn-lg px-4">Learn More</a>
                 </div>
             </div>
             <div class="col-lg-5">
-                <div class="feature-stack">
-                    <div class="feature-item"><i class="fa-solid fa-magnifying-glass-chart"></i> Interactive symptom search and categories</div>
-                    <div class="feature-item"><i class="fa-solid fa-chart-pie"></i> Confidence-based condition prediction cards</div>
-                    <div class="feature-item"><i class="fa-solid fa-shield-heart"></i> Emergency signal detection and precautions</div>
-                    <div class="feature-item"><i class="fa-solid fa-clock-rotate-left"></i> Personal history and health trend snapshots</div>
+                <div class="hero-glass-card hero-glass-card p-4 p-lg-5">
+                    <div class="section-label text-white-50">Fast Demo Flow</div>
+                    <h2 class="h3 mb-3">One platform for symptom checks, guidance, and history.</h2>
+                    <div class="stats-strip">
+                        <div class="stat-chip">
+                            <strong class="d-block fs-3" data-countup="25" data-suffix="+">0+</strong>
+                            <span>Symptoms Tracked</span>
+                        </div>
+                        <div class="stat-chip">
+                            <strong class="d-block fs-3">ML</strong>
+                            <span>Powered Analysis</span>
+                        </div>
+                        <div class="stat-chip">
+                            <strong class="d-block fs-3">100%</strong>
+                            <span>Free & Private</span>
+                        </div>
+                    </div>
+                    <div class="divider border-light opacity-25"></div>
+                    <ul class="list-unstyled mb-0 text-white-50">
+                        <li class="mb-2"><i class="fa-solid fa-check me-2"></i>Visual body-map symptom selection</li>
+                        <li class="mb-2"><i class="fa-solid fa-check me-2"></i>Dashboard charts and health score ring</li>
+                        <li class="mb-2"><i class="fa-solid fa-check me-2"></i>Voice input, dark mode, animated workflow</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
 </section>
-{% endblock %}
 
+<section class="row g-4 reveal-on-scroll">
+    <div class="col-lg-4">
+        <article class="glass-panel p-4 h-100" data-aos="fade-up" data-aos-delay="50">
+            <div class="section-label">Explore</div>
+            <h2 class="h4">Interactive symptom discovery</h2>
+            <p class="text-muted mb-0">Search in real time, click body zones, and refine symptoms with optional clinical context.</p>
+        </article>
+    </div>
+    <div class="col-lg-4">
+        <article class="glass-panel p-4 h-100" data-aos="fade-up" data-aos-delay="100">
+            <div class="section-label">Analyze</div>
+            <h2 class="h4">Readable condition ranking</h2>
+            <p class="text-muted mb-0">Review top matches, urgency labels, animated confidence bars, and clear next-step guidance.</p>
+        </article>
+    </div>
+    <div class="col-lg-4">
+        <article class="glass-panel p-4 h-100" data-aos="fade-up" data-aos-delay="150">
+            <div class="section-label">Present</div>
+            <h2 class="h4">Report-ready presentation</h2>
+            <p class="text-muted mb-0">Download polished PDF reports and show your professors a dashboard that feels product-grade.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,26 @@
+<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="520" rx="28" fill="#0F172A"/>
+  <text x="64" y="82" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="700">User workflow</text>
+  <text x="64" y="120" fill="#9CABCA" font-family="Segoe UI, Arial, sans-serif" font-size="20">The app guides the user from intake to export in five clear steps.</text>
+  <line x1="128" y1="262" x2="1072" y2="262" stroke="#00D4AA" stroke-width="8" stroke-linecap="round"/>
+  <g>
+    <circle cx="128" cy="262" r="34" fill="#0D5BB7"/><text x="112" y="270" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">1</text>
+    <rect x="72" y="318" width="112" height="96" rx="20" fill="#16213B"/><text x="96" y="370" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Info</text>
+  </g>
+  <g>
+    <circle cx="364" cy="262" r="34" fill="#6A3DE8"/><text x="348" y="270" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">2</text>
+    <rect x="290" y="318" width="148" height="96" rx="20" fill="#16213B"/><text x="318" y="370" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Symptoms</text>
+  </g>
+  <g>
+    <circle cx="600" cy="262" r="34" fill="#00A3D5"/><text x="584" y="270" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">3</text>
+    <rect x="526" y="318" width="148" height="96" rx="20" fill="#16213B"/><text x="548" y="370" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Results</text>
+  </g>
+  <g>
+    <circle cx="836" cy="262" r="34" fill="#00D4AA"/><text x="820" y="270" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">4</text>
+    <rect x="762" y="318" width="148" height="96" rx="20" fill="#16213B"/><text x="792" y="370" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Details</text>
+  </g>
+  <g>
+    <circle cx="1072" cy="262" r="34" fill="#14B86D"/><text x="1056" y="270" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">5</text>
+    <rect x="992" y="318" width="160" height="96" rx="20" fill="#16213B"/><text x="1014" y="370" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Treatment</text>
+  </g>
+</svg>

@@ -1,6 +1,9 @@
+"""Run with: python model/train_model.py"""
+
+import pickle
+
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-import pickle
 
 # Load dataset
 data = pd.read_csv("dataset.csv")

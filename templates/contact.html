@@ -5,44 +5,39 @@
 {% block content %}
 <section class="row g-4">
     <div class="col-lg-5">
-        <article class="card border-0 shadow-sm h-100">
-            <div class="card-body p-4">
-                <h1 class="h4 mb-3"><i class="fa-solid fa-headset me-2 text-primary"></i>Support Desk</h1>
-                <p class="text-secondary">Reach us for platform support and workflow questions.</p>
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-2"><i class="fa-solid fa-envelope me-2"></i>support@healthchecker.local</li>
-                    <li class="mb-2"><i class="fa-solid fa-phone me-2"></i>+1 (987) 654-3210</li>
-                    <li><i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Emergency line: +1 (555) 911-0000</li>
-                </ul>
-            </div>
+        <article class="glass-panel p-4 h-100" data-aos="fade-up">
+            <div class="section-label">Support Desk</div>
+            <h1 class="h3 mb-3">Need help with the platform?</h1>
+            <p class="text-muted">Use this page for project-demo support, workflow questions, or UI feedback.</p>
+            <ul class="list-unstyled mb-0 text-muted">
+                <li class="mb-2"><i class="fa-solid fa-envelope me-2"></i>support@healthchecker.local</li>
+                <li class="mb-2"><i class="fa-solid fa-phone me-2"></i>+1 (987) 654-3210</li>
+                <li><i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Emergency line: +1 (555) 911-0000</li>
+            </ul>
         </article>
     </div>
     <div class="col-lg-7">
-        <article class="card border-0 shadow-sm">
-            <div class="card-body p-4">
-                <h2 class="h5 mb-3">Send a Message</h2>
-                <form id="message-form" class="row g-3" method="post" action="{{ url_for('contact') }}">
-                    <div class="col-md-6">
-                        <label for="name" class="form-label fw-semibold">Name</label>
-                        <input id="name" name="name" type="text" class="form-control" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="contact-email" class="form-label fw-semibold">Email</label>
-                        <input id="contact-email" name="email" type="email" class="form-control" required>
-                    </div>
-                    <div class="col-12">
-                        <label for="message" class="form-label fw-semibold">Message</label>
-                        <textarea id="message" name="message" rows="4" class="form-control" required></textarea>
-                    </div>
-                    <div class="col-12">
-                        <button class="btn btn-primary rounded-pill px-4 pulse-btn" type="submit">
-                            <i class="fa-solid fa-paper-plane me-2"></i>Send Message
-                        </button>
-                    </div>
-                </form>
-            </div>
+        <article class="glass-panel p-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="section-label">Message</div>
+            <h2 class="h4 mb-3">Send a note</h2>
+            <form id="message-form" class="row g-3" method="post" action="{{ url_for('contact') }}">
+                <div class="col-md-6">
+                    <label for="name" class="form-label fw-semibold">Name</label>
+                    <input id="name" name="name" type="text" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="contact-email" class="form-label fw-semibold">Email</label>
+                    <input id="contact-email" name="email" type="email" class="form-control" required>
+                </div>
+                <div class="col-12">
+                    <label for="message" class="form-label fw-semibold">Message</label>
+                    <textarea id="message" name="message" rows="4" class="form-control" required></textarea>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary px-4" type="submit">Send Message</button>
+                </div>
+            </form>
         </article>
     </div>
 </section>
 {% endblock %}
-

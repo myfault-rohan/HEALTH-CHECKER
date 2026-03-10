@@ -20,6 +20,27 @@ def get_db_connection():
     return connection
 
 
+def _ensure_column(connection, table_name, column_name, column_sql):
+    columns = connection.execute(f"PRAGMA table_info({table_name})").fetchall()
+    existing = {column["name"] for column in columns}
+    if column_name not in existing:
+        connection.execute(
+            f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_sql}"
+        )
+
+
+def _decode_payload(row, payload_key):
+    try:
+        payload = json.loads(row[payload_key])
+    except (TypeError, json.JSONDecodeError):
+        return None
+
+    payload["id"] = row["id"]
+    if "created_at" not in payload:
+        payload["created_at"] = row["created_at"]
+    return payload
+
+
 def init_db(database_path):
     configure_database(database_path)
     with get_db_connection() as connection:
@@ -45,6 +66,17 @@ def init_db(database_path):
             )
             """
         )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS check_results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                result_json TEXT NOT NULL
+            )
+            """
+        )
+        _ensure_column(connection, "history", "check_result_id", "INTEGER")
         connection.commit()
 
 
@@ -101,27 +133,29 @@ def update_user_profile(email, age, gender):
         connection.commit()
 
 
-def save_history_entry(email, payload):
+def save_history_entry(email, payload, check_result_id=None):
     with get_db_connection() as connection:
-        connection.execute(
+        cursor = connection.execute(
             """
-            INSERT INTO history (email, created_at, payload_json)
-            VALUES (?, ?, ?)
+            INSERT INTO history (email, created_at, payload_json, check_result_id)
+            VALUES (?, ?, ?, ?)
             """,
             (
                 normalize_email(email),
                 datetime.utcnow().isoformat(timespec="seconds"),
                 json.dumps(payload, ensure_ascii=False),
+                check_result_id,
             ),
         )
         connection.commit()
+    return cursor.lastrowid
 
 
 def get_history_entries(email):
     with get_db_connection() as connection:
         rows = connection.execute(
             """
-            SELECT id, created_at, payload_json
+            SELECT id, created_at, payload_json, check_result_id
             FROM history
             WHERE email = ?
             ORDER BY id DESC
@@ -132,14 +166,13 @@ def get_history_entries(email):
 
     parsed_payloads = []
     for row in rows:
-        try:
-            payload = json.loads(row["payload_json"])
-            payload["id"] = row["id"]
-            if "date" not in payload:
-                payload["date"] = row["created_at"]
-            parsed_payloads.append(payload)
-        except json.JSONDecodeError:
+        payload = _decode_payload(row, "payload_json")
+        if not payload:
             continue
+        payload["check_result_id"] = row["check_result_id"]
+        if "date" not in payload:
+            payload["date"] = row["created_at"]
+        parsed_payloads.append(payload)
     return parsed_payloads
 
 
@@ -167,3 +200,79 @@ def clear_history_entries(email):
         )
         connection.commit()
     return result.rowcount
+
+
+def save_check_result(email, result_json):
+    with get_db_connection() as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO check_results (email, created_at, result_json)
+            VALUES (?, ?, ?)
+            """,
+            (
+                normalize_email(email),
+                datetime.utcnow().isoformat(timespec="seconds"),
+                json.dumps(result_json, ensure_ascii=False),
+            ),
+        )
+        connection.commit()
+    return cursor.lastrowid
+
+
+def get_check_result(email, check_id):
+    with get_db_connection() as connection:
+        row = connection.execute(
+            """
+            SELECT id, created_at, result_json
+            FROM check_results
+            WHERE id = ? AND email = ?
+            """,
+            (check_id, normalize_email(email)),
+        ).fetchone()
+    if not row:
+        return None
+    return _decode_payload(row, "result_json")
+
+
+def get_latest_check_result(email):
+    with get_db_connection() as connection:
+        row = connection.execute(
+            """
+            SELECT id, created_at, result_json
+            FROM check_results
+            WHERE email = ?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (normalize_email(email),),
+        ).fetchone()
+    if not row:
+        return None
+    return _decode_payload(row, "result_json")
+
+
+def get_all_check_results(email, limit=None):
+    limit_sql = ""
+    params = [normalize_email(email)]
+    if limit is not None:
+        limit_sql = "LIMIT ?"
+        params.append(int(limit))
+
+    with get_db_connection() as connection:
+        rows = connection.execute(
+            f"""
+            SELECT id, created_at, result_json
+            FROM check_results
+            WHERE email = ?
+            ORDER BY id DESC
+            {limit_sql}
+            """,
+            tuple(params),
+        ).fetchall()
+
+    parsed_results = []
+    for row in rows:
+        payload = _decode_payload(row, "result_json")
+        if payload:
+            parsed_results.append(payload)
+    return parsed_results

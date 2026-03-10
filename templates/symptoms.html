@@ -3,107 +3,149 @@
 {% block title %}Symptom Selection | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="card border-0 shadow-sm">
-    <div class="card-body p-4 p-lg-5">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-            <div>
-                <h1 class="h3 mb-2"><i class="fa-solid fa-notes-medical me-2 text-primary"></i>Step 2: Select Symptoms</h1>
-                <p class="text-secondary mb-0">Use category cards and search to build a precise symptom profile.</p>
-            </div>
-            <div class="text-end">
-                <span class="small text-secondary d-block">Selected</span>
-                <span class="display-6 fw-bold text-primary" id="symptom-count">0</span>
+<section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <div class="section-label">Step 2</div>
+            <h1 class="h2 mb-2">Interactive Symptom Explorer</h1>
+            <p class="text-muted mb-0">Use the body map, real-time HTMX search, and voice input to build a precise symptom profile.</p>
+        </div>
+        <div class="text-end">
+            <div class="section-label">Selected</div>
+            <div class="display-5 fw-bold text-primary" id="symptom-count">{{ selected_symptoms|length }}</div>
+        </div>
+    </div>
+
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-5">
+            <div class="glass-panel body-map-shell h-100">
+                <div class="section-label">Body Map</div>
+                <p class="text-muted mb-3">Click a region to filter related symptoms instantly.</p>
+                <div class="body-map-wrap">
+                    <svg id="body-map" viewBox="0 0 240 420" class="w-100" aria-label="Interactive body map">
+                        <rect x="20" y="18" width="200" height="380" rx="50" fill="transparent" class="body-zone" data-zone="full-body" data-label="Full Body" data-target="{{ body_zone_targets['full-body'] }}"><title>Full Body</title></rect>
+                        <ellipse cx="120" cy="42" rx="38" ry="32" class="body-zone" data-zone="head" data-label="Head" data-target="{{ body_zone_targets['head'] }}"><title>Head</title></ellipse>
+                        <rect x="82" y="84" width="76" height="88" rx="24" class="body-zone" data-zone="chest" data-label="Chest" data-target="{{ body_zone_targets['chest'] }}"><title>Chest</title></rect>
+                        <rect x="82" y="176" width="76" height="78" rx="24" class="body-zone" data-zone="abdomen" data-label="Abdomen" data-target="{{ body_zone_targets['abdomen'] }}"><title>Abdomen</title></rect>
+                        <rect x="42" y="98" width="28" height="140" rx="14" class="body-zone" data-zone="arms" data-label="Arms" data-target="{{ body_zone_targets['arms'] }}"><title>Arms</title></rect>
+                        <rect x="170" y="98" width="28" height="140" rx="14" class="body-zone" data-zone="arms" data-label="Arms" data-target="{{ body_zone_targets['arms'] }}"><title>Arms</title></rect>
+                        <rect x="92" y="258" width="24" height="132" rx="14" class="body-zone" data-zone="legs" data-label="Legs" data-target="{{ body_zone_targets['legs'] }}"><title>Legs</title></rect>
+                        <rect x="124" y="258" width="24" height="132" rx="14" class="body-zone" data-zone="legs" data-label="Legs" data-target="{{ body_zone_targets['legs'] }}"><title>Legs</title></rect>
+                    </svg>
+                    <div id="bodymap-tooltip" class="bodymap-tooltip">Head</div>
+                </div>
             </div>
         </div>
-
-        <div class="mb-4">
-            <label for="symptom-search" class="form-label fw-semibold">Search symptoms</label>
-            <input type="text" class="form-control form-control-lg" id="symptom-search" placeholder="Search symptoms (e.g., fever, cough, dizziness)">
-        </div>
-
-        <form id="symptom-form" action="{{ url_for('check_symptoms') }}" method="post">
-            <div class="row g-3 mb-4" id="all-symptoms-container">
-                {% for symptom in symptom_names %}
-                    {% set symptom_id = ('symptom-' ~ symptom)|replace(' ', '-') %}
-                    <div class="col-sm-6 col-md-4 symptom-item d-none" data-symptom="{{ symptom|lower }}">
-                        <label class="card h-100 shadow-sm symptom-card cursor-pointer border {% if symptom in selected_symptoms %}border-primary bg-primary-subtle{% else %}border-0{% endif %}" style="cursor: pointer;" for="{{ symptom_id }}">
-                            <div class="card-body py-3 d-flex align-items-center">
-                                <input
-                                    class="d-none form-check-input symptom-checkbox me-2"
-                                    type="checkbox"
-                                    id="{{ symptom_id }}"
-                                    name="symptoms"
-                                    value="{{ symptom }}"
-                                    {% if symptom in selected_symptoms %}checked{% endif %}
-                                >
-                                <span class="fw-medium">{{ symptom|title }}</span>
-                            </div>
-                        </label>
+        <div class="col-lg-7">
+            <div class="glass-panel symptom-search-panel">
+                <div class="section-label">Search</div>
+                <div class="symptom-search-wrap mb-3">
+                    <div class="position-relative">
+                        <input
+                            type="text"
+                            id="symptom-search"
+                            name="q"
+                            class="form-control form-control-lg"
+                            placeholder="Search symptoms like fever, shortness of breath, chest pain"
+                            hx-get="{{ url_for('search_symptoms') }}"
+                            hx-trigger="keyup changed delay:200ms"
+                            hx-target="#symptom-results"
+                            hx-swap="innerHTML"
+                            hx-include="#selected-symptom-inputs input, #symptom-zone"
+                            hx-indicator="#search-indicator"
+                        >
+                        <span id="search-indicator" class="search-indicator htmx-indicator">
+                            <span class="spinner-border spinner-border-sm text-info"></span>
+                        </span>
                     </div>
-                {% endfor %}
-            </div>
-
-            <section class="card border-0 bg-light-subtle mb-4">
-                <div class="card-body">
-                    <h3 class="h6 mb-3"><i class="fa-solid fa-sliders me-2"></i>Optional Clinical Details</h3>
-                    <div class="row g-3">
-                        <div class="col-md-6 detail-field d-none" data-requires="cough">
-                            <label for="cough_type" class="form-label">Cough type</label>
-                            <select id="cough_type" name="cough_type" class="form-select">
-                                <option value="">Select</option>
-                                <option value="dry">Dry cough</option>
-                                <option value="wet">Wet cough</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 detail-field d-none" data-requires="headache,head ace,head ache">
-                            <label for="headache_type" class="form-label">Headache type</label>
-                            <select id="headache_type" name="headache_type" class="form-select">
-                                <option value="">Select</option>
-                                <option value="pressure">Pressure / tightness</option>
-                                <option value="throbbing">Throbbing / pulsating</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 detail-field d-none" data-requires="shortness of breath">
-                            <label for="breath_severity" class="form-label">Breath severity</label>
-                            <select id="breath_severity" name="breath_severity" class="form-select">
-                                <option value="">Select</option>
-                                <option value="mild">Mild</option>
-                                <option value="moderate">Moderate</option>
-                                <option value="severe">Severe</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 detail-field d-none" data-requires="chest pain">
-                            <label for="chest_type" class="form-label">Chest pain type</label>
-                            <select id="chest_type" name="chest_type" class="form-select">
-                                <option value="">Select</option>
-                                <option value="pressure">Pressure / heavy</option>
-                                <option value="sharp">Sharp / stabbing</option>
-                                <option value="burning">Burning</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 detail-field d-none" data-requires="fever">
-                            <label for="fever_temp" class="form-label">Fever temperature (F)</label>
-                            <input id="fever_temp" name="fever_temp" type="number" step="0.1" min="95" max="110" class="form-control" placeholder="e.g. 101.4">
-                        </div>
+                    <button type="button" id="voice-search-button" class="btn btn-outline-primary voice-button" aria-label="Use voice search">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                </div>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <p id="voice-heard-text" class="text-muted mb-0">Type 2 or 3 words and matching symptoms will appear instantly.</p>
+                    <div id="audio-wave" class="audio-wave">
+                        <span></span><span></span><span></span>
                     </div>
                 </div>
-            </section>
-
-            <section class="mb-4">
-                <h3 class="h6 mb-2"><i class="fa-solid fa-check-double me-2"></i>Selected Symptoms</h3>
-                <div class="d-flex flex-wrap gap-2" id="selected-symptoms"></div>
-            </section>
-
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('start_over') }}" class="btn btn-outline-secondary rounded-pill px-4">Start Over</a>
-                <button type="submit" class="btn btn-primary rounded-pill px-4 pulse-btn">
-                    <i class="fa-solid fa-microscope me-2"></i>Run Prediction
-                </button>
             </div>
-        </form>
+        </div>
     </div>
 </section>
 
-<script id="symptom-database" type="application/json">{{ symptom_names | tojson }}</script>
+<form id="symptom-form" action="{{ url_for('check_symptoms') }}" method="post">
+    <input type="hidden" id="symptom-zone" name="zone" value="">
+    <div id="selected-symptom-inputs">
+        {% for symptom in selected_symptoms %}
+            <input type="hidden" name="symptoms" value="{{ symptom }}">
+        {% endfor %}
+    </div>
+
+    <section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up" data-aos-delay="50">
+        <div class="section-label">Matching Results</div>
+        <div id="symptom-results">
+            {% include "_symptom_results.html" with context %}
+        </div>
+    </section>
+
+    <section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="section-label">Optional Clinical Details</div>
+        <div class="row g-3">
+            <div class="col-md-6 detail-field d-none" data-requires="cough">
+                <label for="cough_type" class="form-label">Cough type</label>
+                <select id="cough_type" name="cough_type" class="form-select">
+                    <option value="">Select</option>
+                    <option value="dry">Dry cough</option>
+                    <option value="wet">Wet cough</option>
+                </select>
+            </div>
+            <div class="col-md-6 detail-field d-none" data-requires="headache">
+                <label for="headache_type" class="form-label">Headache type</label>
+                <select id="headache_type" name="headache_type" class="form-select">
+                    <option value="">Select</option>
+                    <option value="pressure">Pressure / tightness</option>
+                    <option value="throbbing">Throbbing / pulsating</option>
+                </select>
+            </div>
+            <div class="col-md-6 detail-field d-none" data-requires="shortness of breath">
+                <label for="breath_severity" class="form-label">Breath severity</label>
+                <select id="breath_severity" name="breath_severity" class="form-select">
+                    <option value="">Select</option>
+                    <option value="mild">Mild</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="severe">Severe</option>
+                </select>
+            </div>
+            <div class="col-md-6 detail-field d-none" data-requires="chest pain">
+                <label for="chest_type" class="form-label">Chest pain type</label>
+                <select id="chest_type" name="chest_type" class="form-select">
+                    <option value="">Select</option>
+                    <option value="pressure">Pressure / heavy</option>
+                    <option value="sharp">Sharp / stabbing</option>
+                    <option value="burning">Burning</option>
+                </select>
+            </div>
+            <div class="col-md-6 detail-field d-none" data-requires="fever">
+                <label for="fever_temp" class="form-label">Fever temperature (F)</label>
+                <input id="fever_temp" name="fever_temp" type="number" step="0.1" min="95" max="110" class="form-control" placeholder="e.g. 101.4">
+            </div>
+        </div>
+    </section>
+
+    <section class="glass-panel p-4 p-lg-5" data-aos="fade-up" data-aos-delay="150">
+        <div class="section-label">Selected Symptoms</div>
+        <div class="d-flex flex-wrap gap-2 mb-2" id="selected-symptoms"></div>
+        <p class="text-muted small mb-4">Click a symptom card above to add it. Click the × on a chip to remove it.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('start_over') }}" class="btn btn-outline-secondary px-4">Start Over</a>
+            <button type="submit" class="btn btn-primary px-4">
+                <i class="fa-solid fa-arrow-right me-2"></i>Next: Analyze Symptoms
+            </button>
+        </div>
+    </section>
+</form>
 {% endblock %}
 
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='bodymap.js') }}"></script>
+{% endblock %}

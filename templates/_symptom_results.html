@@ -1,0 +1,24 @@
+{% if symptom_results %}
+    <div class="row g-3">
+        {% for symptom in symptom_results %}
+            <div class="col-sm-6 col-lg-4">
+                <button
+                    type="button"
+                    class="symptom-result-button symptom-card {% if symptom.checked %}is-selected{% endif %}"
+                    data-symptom="{{ symptom.value }}"
+                    data-selected="{{ 'true' if symptom.checked else 'false' }}"
+                    aria-pressed="{{ 'true' if symptom.checked else 'false' }}"
+                >
+                    <div class="d-flex justify-content-between align-items-center gap-3">
+                        <span class="fw-semibold text-start">{{ symptom.highlighted_name|safe }}</span>
+                        <span class="soft-badge symptom-result-state">{% if symptom.checked %}Added{% else %}Add{% endif %}</span>
+                    </div>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="glass-panel p-4 text-center text-muted">
+        {{ empty_message or 'No symptoms found. Try a broader search.' }}
+    </div>
+{% endif %}

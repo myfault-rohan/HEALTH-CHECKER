@@ -3,37 +3,34 @@
 {% block title %}Patient Profile | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="card border-0 shadow-sm">
-    <div class="card-body p-4 p-lg-5">
-        <div class="mb-4">
-            <h1 class="h3 mb-2"><i class="fa-solid fa-id-card-clip me-2 text-primary"></i>Step 1: Patient Information</h1>
-            <p class="text-secondary mb-0">Accurate age and gender improve confidence ranking and urgency interpretation.</p>
-        </div>
+<section class="glass-panel info-chat-shell p-4 p-lg-5" data-aos="fade-up">
+    <div class="section-label">Step 1</div>
+    <h1 class="h2 mb-2">Chat-style onboarding</h1>
+    <p class="text-muted mb-4">The form still posts to the same backend, but the experience now feels like a guided conversation.</p>
 
-        <form action="{{ url_for('info') }}" method="post" class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label fw-semibold" for="age">Age</label>
-                <input id="age" type="number" name="age" class="form-control form-control-lg" min="1" max="120" value="{{ age }}" required>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold" for="gender">Gender</label>
-                <select id="gender" name="gender" class="form-select form-select-lg" required>
-                    <option value="">Select gender</option>
-                    <option value="male" {% if gender == 'male' %}selected{% endif %}>Male</option>
-                    <option value="female" {% if gender == 'female' %}selected{% endif %}>Female</option>
-                    <option value="other" {% if gender == 'other' %}selected{% endif %}>Other</option>
-                </select>
-            </div>
-            <div class="col-12 d-flex flex-wrap gap-2 mt-3">
-                <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 pulse-btn">
-                    Continue to Symptoms
-                </button>
-                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">
-                    Back to Dashboard
-                </a>
-            </div>
-        </form>
+    <div id="chat-window" class="chat-window mb-4">
+        <div id="chat-prompt" class="chat-bubble bot">
+            <span class="typing-dots"><span></span><span></span><span></span></span>
+        </div>
     </div>
+
+    <form id="info-chat" class="d-flex flex-column gap-3">
+        <label class="form-label fw-semibold" for="chat-age-input">Your age</label>
+        <input id="chat-age-input" type="number" min="1" max="120" class="form-control form-control-lg" placeholder="Type your age here" value="{{ age }}">
+        <div id="gender-chip-group" class="chat-chip-group d-none">
+            <button type="button" class="chat-chip" data-gender="male">Male</button>
+            <button type="button" class="chat-chip" data-gender="female">Female</button>
+            <button type="button" class="chat-chip" data-gender="other">Other</button>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary px-4">Send</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary px-4">Back to Dashboard</a>
+        </div>
+    </form>
+
+    <form id="info-form" action="{{ url_for('info') }}" method="post" class="d-none">
+        <input id="info-age" type="hidden" name="age" value="{{ age }}">
+        <input id="info-gender" type="hidden" name="gender" value="{{ gender }}">
+    </form>
 </section>
 {% endblock %}
-

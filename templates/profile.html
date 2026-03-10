@@ -3,75 +3,99 @@
 {% block title %}Profile & History | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="card border-0 shadow-sm">
-    <div class="card-body p-4 p-lg-5">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+<section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="avatar-circle">{{ email[:1]|upper }}</div>
             <div>
-                <h1 class="h3 mb-1"><i class="fa-solid fa-user-clock me-2 text-primary"></i>Profile History</h1>
-                <p class="text-secondary mb-0">Your recent symptom checks and generated outcomes.</p>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-primary rounded-pill" href="{{ url_for('info') }}">New Check</a>
-                {% if history %}
-                    <form method="post" action="{{ url_for('clear_profile_history') }}" onsubmit="return confirm('Delete all history records? This cannot be undone.');">
-                        <button type="submit" class="btn btn-outline-danger rounded-pill">
-                            <i class="fa-solid fa-trash-can me-1"></i>Delete All
-                        </button>
-                    </form>
-                {% endif %}
+                <div class="section-label">Profile</div>
+                <h1 class="h2 mb-1">Your health timeline</h1>
+                <p class="text-muted mb-0">{{ email }}</p>
             </div>
         </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary" href="{{ url_for('export_profile_csv') }}">Export All History as CSV</a>
+            <a class="btn btn-primary" href="{{ url_for('info') }}">New Check</a>
+            {% if history %}
+                <form method="post" action="{{ url_for('clear_profile_history') }}" onsubmit="return confirm('Delete all history records? This cannot be undone.');">
+                    <button type="submit" class="btn btn-outline-danger">Delete All</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</section>
 
-        {% if history %}
-            <div class="vstack gap-3">
-                {% for entry in history %}
-                    <article class="card border-0 bg-light-subtle shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+<section class="row g-4 mb-4">
+    <div class="col-md-4">
+        <article class="counter-card" data-aos="fade-up" data-aos-delay="50">
+            <div class="section-label">Total Checks</div>
+            <div class="display-6 mb-1" data-countup="{{ stats.total_checks }}">{{ stats.total_checks }}</div>
+            <p class="text-muted mb-0">Completed symptom analyses.</p>
+        </article>
+    </div>
+    <div class="col-md-4">
+        <article class="counter-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="section-label">Most Common Symptom</div>
+            <div class="h3 mb-1">{{ stats.most_common_symptom }}</div>
+            <p class="text-muted mb-0">Most repeated symptom across history.</p>
+        </article>
+    </div>
+    <div class="col-md-4">
+        <article class="counter-card" data-aos="fade-up" data-aos-delay="150">
+            <div class="section-label">Last Check Date</div>
+            <div class="h3 mb-1">{{ stats.last_check_date }}</div>
+            <p class="text-muted mb-0">Latest recorded health check session.</p>
+        </article>
+    </div>
+</section>
+
+<section class="glass-panel p-4 p-lg-5" data-aos="fade-up" data-aos-delay="100">
+    <div class="section-label">History Timeline</div>
+    {% if history %}
+        <div class="timeline">
+            {% for entry in history %}
+                <article class="timeline-entry">
+                    <span class="timeline-dot"></span>
+                    <div class="history-card glass-panel p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                            <div>
                                 <strong>{{ entry.date }}</strong>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="badge bg-info-subtle text-info-emphasis">{{ entry.symptoms|length }} symptoms</span>
-                                    <form method="post" action="{{ url_for('delete_profile_history_entry', entry_id=entry.id) }}" onsubmit="return confirm('Delete this history record?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
-                                            <i class="fa-solid fa-trash me-1"></i>Delete
-                                        </button>
-                                    </form>
-                                </div>
+                                <div class="text-muted mt-1">{{ entry.top_condition }}</div>
                             </div>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <h2 class="h6">Symptoms</h2>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        {% for symptom in entry.symptoms %}
-                                            <span class="badge rounded-pill symptom-pill">{{ symptom }}</span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <h2 class="h6">Condition Matches</h2>
-                                    <ul class="small mb-0">
-                                        {% for condition in entry.conditions %}
-                                            <li>{{ condition }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                <div class="col-md-4">
-                                    <h2 class="h6">Remedies</h2>
-                                    <ul class="small mb-0">
-                                        {% for remedy in entry.remedies %}
-                                            <li>{{ remedy }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <span class="urgency-badge urgency-{{ entry.top_urgency }}">{{ entry.top_urgency|capitalize }}</span>
+                                <button type="button" class="btn btn-outline-primary btn-sm history-toggle" aria-expanded="false">Expand</button>
+                                <form method="post" action="{{ url_for('delete_profile_history_entry', entry_id=entry.id) }}" onsubmit="return confirm('Delete this history record?');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                </form>
                             </div>
                         </div>
-                    </article>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="text-secondary mb-3">No history found yet.</p>
-            <a class="btn btn-primary rounded-pill" href="{{ url_for('info') }}">Start Symptom Check</a>
-        {% endif %}
-    </div>
+                        <div class="history-accordion">
+                            <div class="section-label">Symptoms</div>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                {% for symptom in entry.symptoms %}
+                                    <span class="symptom-pill">{{ symptom }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="section-label">Top Matches</div>
+                            <ul class="text-muted mb-3">
+                                {% for condition in entry.condition_summaries or [] %}
+                                    <li>{{ condition.name }} • {{ condition.confidence }}% • {{ condition.category }}</li>
+                                {% endfor %}
+                            </ul>
+                            <div class="section-label">Remedies</div>
+                            <ul class="text-muted mb-0">
+                                {% for remedy in entry.remedies %}
+                                    <li>{{ remedy }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted mb-0">No history found yet.</p>
+    {% endif %}
 </section>
 {% endblock %}

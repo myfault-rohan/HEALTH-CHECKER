@@ -4,66 +4,31 @@
 
 {% block content %}
 <div class="auth-page-wrapper">
-    <div class="auth-container">
-        <div class="auth-card-wrapper">
-            <div class="auth-card card border-0 shadow-lg">
-                <div class="card-body p-4 p-lg-5">
-                    <div class="text-center mb-4">
-                        <div class="auth-icon mb-3">
-                            <i class="fa-solid fa-heart-pulse"></i>
-                        </div>
-                        <h2 class="h4 mb-1 fw-bold">Welcome Back</h2>
-                        <p class="text-secondary small mb-0">Sign in to continue to Health Checker Pro</p>
-                    </div>
-                    
-                    <form id="login-form" action="{{ url_for('login') }}" method="post" class="vstack gap-3">
-                        <div>
-                            <label for="email" class="form-label fw-semibold">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fa-regular fa-envelope text-muted"></i>
-                                </span>
-                                <input id="email" type="email" name="email" autocomplete="email" placeholder="your@email.com" class="form-control border-start-0" required>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="password" class="form-label fw-semibold">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fa-solid fa-lock text-muted"></i>
-                                </span>
-                                <input id="password" type="password" name="password" autocomplete="current-password" placeholder="Enter your password" class="form-control border-start-0" required>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="remember">
-                                <label class="form-check-label small text-secondary" for="remember">Remember me</label>
-                            </div>
-                            <a href="#" class="small text-decoration-none">Forgot password?</a>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-lg rounded-pill mt-2">
-                            <i class="fa-solid fa-sign-in-alt me-2"></i>Sign In
-                        </button>
-                    </form>
-                    
-                    <hr class="my-4">
-                    
-                    <p class="text-center mb-0">
-                        <span class="text-secondary small">Don't have an account?</span>
-                        <a href="{{ url_for('signup') }}" class="small fw-semibold text-decoration-none">Create one</a>
-                    </p>
+    <section class="glass-panel auth-card p-4 p-lg-5" data-aos="fade-up">
+        <div class="text-center mb-4">
+            <span class="soft-badge mb-3">Secure Access</span>
+            <h1 class="h2 mb-2">Welcome back</h1>
+            <p class="text-muted mb-0">Sign in to continue with your dashboard and history.</p>
+        </div>
+        <form id="login-form" action="{{ url_for('login') }}" method="post" class="vstack gap-3">
+            <div data-aos="fade-up" data-aos-delay="50">
+                <label for="email" class="form-label fw-semibold">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
+                    <input id="email" type="email" name="email" autocomplete="email" placeholder="you@example.com" class="form-control" required>
                 </div>
             </div>
-            
-            <div class="auth-footer text-center mt-4">
-                <p class="text-secondary small mb-0">
-                    <i class="fa-solid fa-shield-halved me-1"></i>
-                    Your health data is secure and private
-                </p>
+            <div data-aos="fade-up" data-aos-delay="100">
+                <label for="password" class="form-label fw-semibold">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                    <input id="password" type="password" name="password" autocomplete="current-password" placeholder="Enter your password" class="form-control" required>
+                </div>
             </div>
-        </div>
-    </div>
+            <button type="submit" class="btn btn-primary btn-lg mt-2" data-aos="fade-up" data-aos-delay="150">Sign In</button>
+        </form>
+        <div class="divider"></div>
+        <p class="text-center mb-0">No account yet? <a href="{{ url_for('signup') }}" class="text-primary fw-semibold">Create one</a></p>
+    </section>
 </div>
 {% endblock %}
-

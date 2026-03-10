@@ -1,11 +1,15 @@
 from flask import Flask
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
-from app.models.user_store import init_db
-from app.routes.main import register_routes
-from config import Config
+limiter = Limiter(key_func=get_remote_address, default_limits=[], storage_uri="memory://")
 
 
 def create_app():
+    from app.models.user_store import init_db
+    from app.routes.main import register_routes
+    from config import Config
+
     app = Flask(
         __name__,
         template_folder="../templates",
@@ -15,9 +19,6 @@ def create_app():
     app.config.from_object(Config)
 
     init_db(app.config["DATABASE_PATH"])
+    limiter.init_app(app)
     register_routes(app)
     return app
-
-
-# Expose a global Flask app for Gunicorn target: `app:app`.
-app = create_app()

@@ -3,36 +3,28 @@
 {% block title %}About | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="card border-0 shadow-sm">
-    <div class="card-body p-4 p-lg-5">
-        <h1 class="h3 mb-4"><i class="fa-solid fa-circle-info me-2 text-primary"></i>About Health Checker Pro</h1>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <article class="card border-0 bg-light-subtle h-100">
-                    <div class="card-body">
-                        <h2 class="h5">How It Works</h2>
-                        <p class="text-secondary mb-0">The platform maps selected symptoms to weighted condition profiles and ranks matches by confidence, severity, and evidence overlap.</p>
-                    </div>
-                </article>
-            </div>
-            <div class="col-md-4">
-                <article class="card border-0 bg-light-subtle h-100">
-                    <div class="card-body">
-                        <h2 class="h5">Safety Focus</h2>
-                        <p class="text-secondary mb-0">Emergency symptom combinations trigger high-priority guidance. The app provides educational support, not a formal diagnosis.</p>
-                    </div>
-                </article>
-            </div>
-            <div class="col-md-4">
-                <article class="card border-0 bg-light-subtle h-100">
-                    <div class="card-body">
-                        <h2 class="h5">Why It Helps</h2>
-                        <p class="text-secondary mb-0">Clear dashboards and history tracking improve symptom reporting quality before clinician consultation.</p>
-                    </div>
-                </article>
-            </div>
+<section class="glass-panel p-4 p-lg-5" data-aos="fade-up">
+    <div class="section-label">About The Project</div>
+    <h1 class="h2 mb-4">Built as a college project, presented like a product.</h1>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <article class="counter-card h-100" data-aos="fade-up" data-aos-delay="50">
+                <h2 class="h4 mb-2">How it works</h2>
+                <p class="text-muted mb-0">The app maps selected symptoms to weighted condition profiles and blends those results with a trained ML prediction layer.</p>
+            </article>
+        </div>
+        <div class="col-md-4">
+            <article class="counter-card h-100" data-aos="fade-up" data-aos-delay="100">
+                <h2 class="h4 mb-2">Safety focus</h2>
+                <p class="text-muted mb-0">Emergency symptom combinations raise urgency guidance so users know when not to rely on self-care alone.</p>
+            </article>
+        </div>
+        <div class="col-md-4">
+            <article class="counter-card h-100" data-aos="fade-up" data-aos-delay="150">
+                <h2 class="h4 mb-2">Why it stands out</h2>
+                <p class="text-muted mb-0">Interactive search, PDF reports, dashboards, profile timelines, and dark mode turn a basic Flask project into a polished demo.</p>
+            </article>
         </div>
     </div>
 </section>
 {% endblock %}
-

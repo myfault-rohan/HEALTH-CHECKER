@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from collections import defaultdict
 
 
@@ -251,7 +252,7 @@ symptoms_conditions = {
         "remedies": [
             "🫐 Drinking cranberry juice",
             "🌿 Consuming chandana (sandalwood) water",
-            "🌿 Taking秦皮 (Indian barberry) extract",
+            "🌿 Taking Qin Pi (Indian barberry) extract",
             "💧 Drinking plenty of water",
             "🌿 Using punarnava (Boerhavia diffusa) for kidney health",
             "🚫 Avoiding caffeine and alcohol"

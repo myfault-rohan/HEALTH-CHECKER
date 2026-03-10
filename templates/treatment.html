@@ -3,63 +3,57 @@
 {% block title %}Treatment Guidance | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4 p-lg-5">
-        <h1 class="h3 mb-2"><i class="fa-solid fa-kit-medical me-2 text-primary"></i>Step 5: Guidance Plan</h1>
-        <p class="text-secondary mb-0">Recommendations for <strong>{{ condition.name }}</strong> based on symptom profile and urgency level.</p>
-    </div>
+<section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up">
+    <div class="section-label">Step 5</div>
+    <h1 class="h2 mb-2">Guidance for {{ condition.name }}</h1>
+    <p class="text-muted mb-0">Recommendations based on the selected symptom profile and urgency interpretation.</p>
 </section>
 
 {% if emergency_detected %}
-    <section class="alert alert-danger shadow-sm mb-4">
-        <h2 class="h5 mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Emergency Warning</h2>
-        <p class="mb-0">{{ emergency_message }}</p>
+    <section class="warning-banner mb-4" data-aos="fade-up">
+        <strong>Emergency warning:</strong> {{ emergency_message }}
     </section>
 {% endif %}
 
-<section class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <h2 class="h5 mb-3">Ayurvedic / Home-Care Guidance</h2>
-        {% if remedies %}
-            {% for remedy in remedies %}
-                <p class="mb-2">{{ remedy }}</p>
-            {% endfor %}
-        {% else %}
-            <p class="mb-0 text-secondary">No remedy suggestions available for this symptom set.</p>
-        {% endif %}
+{% include "report_template.html" %}
+
+<section class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <article class="glass-panel p-4 h-100" data-aos="fade-up" data-aos-delay="50">
+            <div class="section-label">Treatment</div>
+            <h2 class="h4 mb-3">Ayurvedic / Home-Care Guidance</h2>
+            {% if remedies %}
+                <ul class="mb-0 text-muted">
+                    {% for remedy in remedies %}
+                        <li>{{ remedy }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">No remedy suggestions available for this symptom set.</p>
+            {% endif %}
+        </article>
+    </div>
+    <div class="col-lg-6">
+        <article class="glass-panel p-4 h-100" data-aos="fade-up" data-aos-delay="100">
+            <div class="section-label">Lifestyle</div>
+            <h2 class="h4 mb-3">Recovery Support</h2>
+            <ul class="mb-3 text-muted">
+                {% for item in lifestyle_suggestions %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+            <div class="section-label">When To See A Doctor</div>
+            <ul class="mb-0 text-muted">
+                {% for item in when_to_see_doctor %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </article>
     </div>
 </section>
 
-<section class="row g-4">
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body p-4">
-                <h2 class="h5 mb-3">When To See A Doctor</h2>
-                <ul class="mb-0">
-                    {% for item in when_to_see_doctor %}
-                        <li class="mb-2">{{ item }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body p-4">
-                <h2 class="h5 mb-3">Lifestyle Suggestions</h2>
-                <ul class="mb-0">
-                    {% for item in lifestyle_suggestions %}
-                        <li class="mb-2">{{ item }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<div class="d-flex flex-wrap gap-2 mt-4">
-    <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('details', condition_name=condition.name) }}">Back to Details</a>
-    <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('start_over') }}">Start New Check</a>
+<div class="d-flex flex-wrap gap-2 mt-4" data-aos="fade-up" data-aos-delay="150">
+    <a class="btn btn-outline-secondary px-4" href="{{ url_for('details', condition_name=condition.name) }}">Back to Details</a>
+    <a class="btn btn-primary px-4" href="{{ url_for('start_over') }}">Start New Check</a>
 </div>
 {% endblock %}
-

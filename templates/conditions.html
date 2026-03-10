@@ -3,132 +3,75 @@
 {% block title %}Prediction Results | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+<div id="conditions-page" data-check-id="{{ current_check_id }}" data-high-urgency="{{ 'true' if high_urgency_present else 'false' }}">
+    <section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
-                <h1 class="h3 mb-2"><i class="fa-solid fa-chart-simple me-2 text-primary"></i>Step 3: Prediction Results</h1>
-                <p class="text-secondary mb-0">{{ analysis.suggestion or 'Review the confidence-ranked condition matches below.' }}</p>
+                <div class="section-label">Step 3</div>
+                <h1 class="h2 mb-2">Condition Matches</h1>
+                <p class="text-muted mb-0">{{ analysis.suggestion or 'Review the ranked matches and urgency guidance below.' }}</p>
             </div>
-            <a href="{{ url_for('symptoms') }}" class="btn btn-primary rounded-pill">
-                <i class="fa-solid fa-rotate-right me-2"></i>Check Again
-            </a>
-        </div>
-    </div>
-</section>
-
-{% if condition_details %}
-    <section class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <p class="text-uppercase small text-secondary mb-1">Machine Learning Prediction</p>
-            <h2 class="h3 mb-0 text-primary">{{ predicted_disease }}</h2>
-            {% if predicted_disease and predicted_disease not in ["No clear match", "Prediction Error", "No clear match (Model not loaded)"] %}
-                <a href="{{ url_for('treatment', condition_name=predicted_disease) }}" class="btn btn-outline-primary btn-sm rounded-pill mt-3">
-                    <i class="fa-solid fa-pills me-1"></i> View Treatment Options
-                </a>
-            {% endif %}
-        </div>
-    </section>
-
-    {% set top = condition_details[0] %}
-    <section class="card border-0 shadow-sm mb-4 highlight-card">
-        <div class="card-body p-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <p class="text-uppercase small text-secondary mb-1">Top Predicted Condition</p>
-                    <h2 class="h3 mb-2">{{ top.name }}</h2>
-                    <p class="mb-0 text-secondary">Confidence: <strong>{{ top.confidence }}%</strong> ({{ top.match_label }})</p>
-                </div>
-                <span class="badge rounded-pill urgency-badge urgency-{{ top.urgency }}">{{ top.urgency|capitalize }} urgency</span>
-            </div>
-            <hr>
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <h3 class="h6">Possible Causes</h3>
-                    <ul class="list-group list-group-flush">
-                        {% for item in top.possible_causes %}
-                            <li class="list-group-item px-0">{{ item|title }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="col-md-6">
-                    <h3 class="h6">Recommended Precautions</h3>
-                    <ul class="list-group list-group-flush">
-                        {% for tip in top.precautions %}
-                            <li class="list-group-item px-0">{{ tip }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('symptoms') }}" class="btn btn-outline-primary">Refine Symptoms</a>
+                <a href="{{ url_for('treatment', condition_name=condition_details[0].name) }}" class="btn btn-primary">Open Guidance</a>
             </div>
         </div>
     </section>
 
-    <section class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h3 class="h5 mb-3"><i class="fa-solid fa-list-check me-2 text-primary"></i>Selected Symptoms</h3>
-            {% if selected_symptoms %}
-                <div class="d-flex flex-wrap gap-2">
-                    {% for symptom in selected_symptoms %}
-                        <span class="badge rounded-pill symptom-pill">{{ symptom|title }}</span>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="text-secondary mb-0">No symptoms selected.</p>
-            {% endif %}
+    {% if high_urgency_present %}
+        <section id="conditions-warning-banner" class="warning-banner mb-4" data-aos="fade-up">
+            <strong>High urgency pattern detected.</strong> Review the warning signs carefully and seek clinical help if symptoms worsen.
+        </section>
+    {% endif %}
+
+    <section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up" data-aos-delay="50">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-7">
+                <div class="section-label">Top ML Match</div>
+                <h2 class="display-6 mb-2">{{ predicted_disease }}</h2>
+                <p class="text-muted mb-0">Selected symptoms: {{ selected_symptoms|join(', ') }}</p>
+            </div>
+            <div class="col-lg-5">
+                {% include "report_template.html" %}
+            </div>
         </div>
     </section>
 
-    <section class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h3 class="h5 mb-3"><i class="fa-solid fa-shield-heart me-2 text-primary"></i>Precaution Suggestions</h3>
-            {% if top.precautions %}
-                <ul class="list-group list-group-flush">
-                    {% for tip in top.precautions %}
-                        <li class="list-group-item px-0">{{ tip }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-secondary mb-0">No precaution suggestions available for this result.</p>
-            {% endif %}
-        </div>
-    </section>
-
-    <section class="row g-3">
+    <section class="row g-4">
         {% for condition in condition_details %}
             <div class="col-lg-6">
-                <article class="card border-0 shadow-sm h-100 condition-result-card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                            <h3 class="h5 mb-0">{{ condition.name }}</h3>
-                            <span class="badge rounded-pill urgency-badge urgency-{{ condition.urgency }}">{{ condition.urgency|capitalize }}</span>
+                <article class="glass-panel p-4 h-100 condition-card" style="animation-delay: {{ loop.index0 * 150 }}ms;" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <div class="section-label">{{ condition.category }}</div>
+                            <h3 class="h4 mb-1">{{ condition.name }}</h3>
+                            <p class="text-muted mb-0">{{ condition.description }}</p>
                         </div>
-                        <p class="text-secondary mb-2">{{ condition.description }}</p>
-                        <p class="small mb-2"><strong>Confidence:</strong> {{ condition.confidence }}% ({{ condition.match_label }})</p>
-                        <div class="progress mb-3" role="progressbar" aria-label="Confidence score">
-                            <div class="progress-bar bg-info" style="width: {{ condition.confidence }}%">{{ condition.confidence }}%</div>
-                        </div>
-                        <h4 class="h6 mb-2">Possible Causes</h4>
-                        <ul class="small text-secondary mb-3">
-                            {% for cause in condition.possible_causes %}
-                                <li>{{ cause|title }}</li>
-                            {% endfor %}
-                        </ul>
-                        <a href="{{ url_for('details', condition_name=condition.name) }}" class="btn btn-outline-primary btn-sm rounded-pill">
-                            View Clinical Detail
-                        </a>
+                        <span class="urgency-badge urgency-{{ condition.urgency }}">{{ condition.urgency|capitalize }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>{{ condition.match_label }}</strong>
+                        <span>{{ condition.confidence }}%</span>
+                    </div>
+                    <div class="confidence-meter mb-3">
+                        <div class="confidence-bar" data-confidence="{{ condition.confidence }}"></div>
+                    </div>
+                    <ul class="text-muted small mb-4">
+                        {% for cause in condition.possible_causes %}
+                            <li>{{ cause|title }}</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('details', condition_name=condition.name) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                        <a href="{{ url_for('treatment', condition_name=condition.name) }}" class="btn btn-primary btn-sm">Treatment</a>
                     </div>
                 </article>
             </div>
         {% endfor %}
     </section>
-{% else %}
-    <section class="card border-0 shadow-sm">
-        <div class="card-body p-4">
-            <p class="mb-3">No condition matches found yet. Try adding more symptoms.</p>
-            <a href="{{ url_for('symptoms') }}" class="btn btn-primary rounded-pill">
-                <i class="fa-solid fa-rotate-right me-2"></i>Check Again
-            </a>
-        </div>
-    </section>
-{% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 {% endblock %}

@@ -3,61 +3,67 @@
 {% block title %}Condition Details | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="card border-0 shadow-sm">
-    <div class="card-body p-4 p-lg-5">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-            <div>
-                <p class="text-uppercase small text-secondary mb-1">Step 4: Clinical Detail</p>
-                <h1 class="h3 mb-2">{{ condition.name }}</h1>
-                <p class="text-secondary mb-0">{{ condition.description }}</p>
-            </div>
-            <span class="badge rounded-pill urgency-badge urgency-{{ condition.urgency }}">{{ condition.urgency|capitalize }} urgency</span>
+<section class="glass-panel p-4 p-lg-5" data-aos="fade-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <div class="section-label">Step 4</div>
+            <h1 class="h2 mb-2">{{ condition.name }}</h1>
+            <p class="text-muted mb-0">{{ condition.description }}</p>
         </div>
+        <span class="urgency-badge urgency-{{ condition.urgency }}">{{ condition.urgency|capitalize }} urgency</span>
+    </div>
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="metric-card">
-                    <span>Confidence</span>
-                    <strong>{{ condition.confidence }}%</strong>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="counter-card">
+                <div class="section-label">Confidence</div>
+                <strong class="display-6">{{ condition.confidence }}%</strong>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="counter-card">
+                <div class="section-label">Match Label</div>
+                <strong>{{ condition.match_label }}</strong>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="counter-card">
+                <div class="section-label">Severity</div>
+                <strong>{{ condition.severity|capitalize }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="glass-panel p-4 h-100">
+                <div class="section-label">Evidence</div>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for item in condition.evidence %}
+                        <span class="symptom-pill">{{ item|title }}</span>
+                    {% endfor %}
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="metric-card">
-                    <span>Match Label</span>
-                    <strong>{{ condition.match_label }}</strong>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="metric-card">
-                    <span>Severity</span>
-                    <strong>{{ condition.severity|capitalize }}</strong>
-                </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="glass-panel p-4 h-100">
+                <div class="section-label">Precautions</div>
+                <ul class="text-muted mb-0">
+                    {% for tip in condition.precautions %}
+                        <li>{{ tip }}</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
+    </div>
 
-        <h2 class="h6 mb-3">Matched Symptoms / Possible Causes</h2>
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            {% for item in condition.evidence %}
-                <span class="badge rounded-pill symptom-pill">{{ item|title }}</span>
-            {% endfor %}
-        </div>
+    {% if condition.note %}
+        <div class="warning-banner mt-4">{{ condition.note }}</div>
+    {% endif %}
 
-        <h2 class="h6 mb-3">Recommended Precautions</h2>
-        <ul class="list-group list-group-flush mb-4">
-            {% for tip in condition.precautions %}
-                <li class="list-group-item px-0">{{ tip }}</li>
-            {% endfor %}
-        </ul>
-
-        {% if condition.note %}
-            <div class="alert alert-warning">{{ condition.note }}</div>
-        {% endif %}
-
-        <div class="d-flex flex-wrap gap-2">
-            <a class="btn btn-outline-secondary rounded-pill px-4" href="{{ url_for('conditions') }}">Back to Results</a>
-            <a class="btn btn-primary rounded-pill px-4" href="{{ url_for('treatment', condition_name=condition.name) }}">Open Guidance</a>
-        </div>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+        <a class="btn btn-outline-secondary px-4" href="{{ url_for('conditions') }}">Back to Results</a>
+        <a class="btn btn-primary px-4" href="{{ url_for('treatment', condition_name=condition.name) }}">Open Guidance</a>
     </div>
 </section>
 {% endblock %}
-

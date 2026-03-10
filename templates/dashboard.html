@@ -3,84 +3,105 @@
 {% block title %}Dashboard | Health Checker Pro{% endblock %}
 
 {% block content %}
-<section class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <div>
-                <h1 class="h3 mb-1">Welcome to your health dashboard</h1>
-                <p class="text-secondary mb-0">Monitor your checks, access your profile, and start a new analysis.</p>
-            </div>
-            <a href="{{ url_for('info') }}" class="btn btn-primary rounded-pill px-4">
-                <i class="fa-solid fa-stethoscope me-2"></i>Start New Check
-            </a>
+<section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <div class="section-label">Analytics Dashboard</div>
+            <h1 class="h2 mb-2">Your health activity, visualized.</h1>
+            <p class="text-muted mb-0">Track trends, revisit recent checks, and present a polished analytics experience.</p>
         </div>
+        <a href="{{ url_for('info') }}" class="btn btn-primary px-4">Start New Check</a>
     </div>
 </section>
 
 <section class="row g-4 mb-4">
-    <div class="col-md-6 col-xl-4">
-        <article class="card border-0 shadow-sm h-100 nav-card">
-            <div class="card-body">
-                <h2 class="h6 text-uppercase text-secondary mb-3">Profile</h2>
-                <p class="mb-1"><strong>Email:</strong> {{ email or 'Not available' }}</p>
-                <p class="mb-3"><strong>Age / Gender:</strong> {{ age }} / {{ gender }}</p>
-                <a href="{{ url_for('profile') }}" class="btn btn-outline-primary btn-sm rounded-pill">Open Profile</a>
+    <div class="col-lg-4">
+        <article class="glass-panel analytics-card text-center dashboard-skeleton skeleton" data-aos="fade-up" data-aos-delay="50">
+            <div class="section-label">Health Score</div>
+            <div id="health-score-ring" class="health-score-ring position-relative">
+                <div class="health-score-content">
+                    <div class="display-5 fw-bold" id="health-score-value">{{ stats.health_score }}</div>
+                    <div class="text-muted">out of 100</div>
+                </div>
             </div>
         </article>
     </div>
-    <div class="col-md-6 col-xl-4">
-        <article class="card border-0 shadow-sm h-100 nav-card">
-            <div class="card-body">
-                <h2 class="h6 text-uppercase text-secondary mb-3">Health Check Workflow</h2>
-                <p class="mb-3">Enter profile details, select symptoms, and review confidence-ranked predictions.</p>
-                <a href="{{ url_for('info') }}" class="btn btn-outline-primary btn-sm rounded-pill">Continue Workflow</a>
-            </div>
+    <div class="col-lg-4">
+        <article class="glass-panel analytics-card dashboard-skeleton skeleton" data-aos="fade-up" data-aos-delay="100">
+            <div class="section-label">Streak</div>
+            <h2 class="display-6 mb-2" id="streak-value">🔥 {{ stats.streak }}-day check streak</h2>
+            <p class="text-muted mb-0">Consecutive days with logged check activity.</p>
         </article>
     </div>
-    <div class="col-md-12 col-xl-4">
-        <article class="card border-0 shadow-sm h-100 nav-card">
-            <div class="card-body">
-                <h2 class="h6 text-uppercase text-secondary mb-3">Support</h2>
-                <p class="mb-3">Need help with the platform or symptoms workflow?</p>
-                <a href="{{ url_for('contact') }}" class="btn btn-outline-primary btn-sm rounded-pill">Contact Support</a>
-            </div>
+    <div class="col-lg-4">
+        <article class="glass-panel analytics-card dashboard-skeleton skeleton" data-aos="fade-up" data-aos-delay="150">
+            <div class="section-label">Account Snapshot</div>
+            <div class="metric-line"><span>Email</span><strong>{{ email }}</strong></div>
+            <div class="metric-line"><span>Age / Gender</span><strong>{{ age }} / {{ gender }}</strong></div>
+            <div class="metric-line"><span>Total Checks</span><strong id="dashboard-total-checks">{{ stats.total_checks }}</strong></div>
         </article>
     </div>
 </section>
 
-<section class="card border-0 shadow-sm">
-    <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 mb-0">Recent Symptom Checks</h2>
-            <span class="badge bg-info-subtle text-info-emphasis">{{ history|length }} recent records</span>
-        </div>
-        {% if history %}
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Symptoms</th>
-                            <th>Top Match</th>
-                            <th>Confidence Quality</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in history %}
-                            <tr>
-                                <td>{{ entry.date }}</td>
-                                <td>{{ entry.symptoms|length }}</td>
-                                <td>{{ entry.conditions[0] if entry.conditions else 'N/A' }}</td>
-                                <td><span class="badge bg-light text-dark">{{ entry.analysis_quality|capitalize }}</span></td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<section class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <article class="glass-panel analytics-card chart-card dashboard-skeleton skeleton" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="section-label">Chart</div>
+                    <h2 class="h4 mb-0">Symptom Frequency</h2>
+                </div>
             </div>
-        {% else %}
-            <p class="text-secondary mb-0">No checks available yet. Start your first symptom analysis.</p>
-        {% endif %}
+            <canvas id="symptom-frequency-chart"></canvas>
+        </article>
     </div>
+    <div class="col-lg-5">
+        <article class="glass-panel analytics-card chart-card dashboard-skeleton skeleton" data-aos="fade-up" data-aos-delay="100">
+            <div class="section-label">Distribution</div>
+            <h2 class="h4 mb-3">Condition Trend</h2>
+            <canvas id="condition-trend-chart"></canvas>
+        </article>
+    </div>
+</section>
+
+<section class="glass-panel p-4 p-lg-5 dashboard-skeleton skeleton" data-aos="fade-up" data-aos-delay="150">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <div class="section-label">Recent History</div>
+            <h2 class="h4 mb-0">Latest checks</h2>
+        </div>
+        <a href="{{ url_for('profile') }}" class="btn btn-outline-primary">Open Full Profile</a>
+    </div>
+    {% if history %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Symptoms</th>
+                        <th>Top Match</th>
+                        <th>Urgency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in history %}
+                        <tr>
+                            <td>{{ entry.date }}</td>
+                            <td>{{ entry.symptoms|length }}</td>
+                            <td>{{ entry.top_condition }}</td>
+                            <td><span class="urgency-badge urgency-{{ entry.top_urgency }}">{{ entry.top_urgency|capitalize }}</span></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted mb-0">No checks available yet. Start your first symptom analysis.</p>
+    {% endif %}
 </section>
 {% endblock %}
 
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='dashboard_charts.js') }}"></script>
+{% endblock %}

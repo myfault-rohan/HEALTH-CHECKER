@@ -1,4 +1,8 @@
-"""Machine Learning disease prediction."""
+"""Machine Learning disease prediction.
+
+Single source of truth for ML inference. Do not reintroduce duplicate
+predictor modules under ``app/services``.
+"""
 
 import pickle
 from pathlib import Path

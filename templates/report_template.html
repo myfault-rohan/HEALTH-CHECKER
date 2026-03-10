@@ -1,0 +1,31 @@
+<section class="glass-panel report-preview" data-aos="fade-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+            <div class="section-label">Report Preview</div>
+            <h3 class="h4 mb-1">Health Checker Pro Report</h3>
+            <p class="text-muted mb-0">Patient {{ check_result.patient.age }} years, {{ check_result.patient.gender|capitalize }} • {{ check_result.checked_at }}</p>
+        </div>
+        <a href="{{ url_for('download_report', check_id=current_check_id) }}" class="btn btn-primary btn-download" data-report-download>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span class="download-label">📄 Download Report</span>
+        </a>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="section-label">Symptoms Selected</div>
+            <div class="d-flex flex-wrap gap-2">
+                {% for symptom in check_result.selected_symptoms %}
+                    <span class="symptom-pill">{{ symptom }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="section-label">Top Matches</div>
+            <ul class="mb-0 text-muted">
+                {% for condition in check_result.condition_details[:3] %}
+                    <li>{{ condition.name }} • {{ condition.confidence }}% • {{ condition.urgency|capitalize }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>

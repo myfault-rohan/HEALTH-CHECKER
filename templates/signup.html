@@ -4,76 +4,38 @@
 
 {% block content %}
 <div class="auth-page-wrapper">
-    <div class="auth-container">
-        <div class="auth-card-wrapper">
-            <div class="auth-card card border-0 shadow-lg">
-                <div class="card-body p-4 p-lg-5">
-                    <div class="text-center mb-4">
-                        <div class="auth-icon mb-3">
-                            <i class="fa-solid fa-user-plus"></i>
-                        </div>
-                        <h2 class="h4 mb-1 fw-bold">Create a New Account</h2>
-                        <p class="text-secondary small mb-0">Join Health Checker Pro today</p>
-                    </div>
-                    
-                    <form action="{{ url_for('signup') }}" method="post" class="vstack gap-3">
-                        <div>
-                            <label for="email" class="form-label fw-semibold">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fa-regular fa-envelope text-muted"></i>
-                                </span>
-                                <input id="email" type="email" name="email" autocomplete="email" placeholder="you@example.com" class="form-control border-start-0" required>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="password" class="form-label fw-semibold">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fa-solid fa-lock text-muted"></i>
-                                </span>
-                                <input id="password" type="password" name="password" autocomplete="new-password" placeholder="At least 6 characters" class="form-control border-start-0" minlength="6" required>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="confirm_password" class="form-label fw-semibold">Confirm Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="fa-solid fa-lock text-muted"></i>
-                                </span>
-                                <input id="confirm_password" type="password" name="confirm_password" autocomplete="new-password" placeholder="Re-enter your password" class="form-control border-start-0" minlength="6" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" id="terms" required>
-                            <label class="form-check-label small text-secondary" for="terms">
-                                I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
-                            </label>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary btn-lg rounded-pill mt-2">
-                            <i class="fa-solid fa-user-plus me-2"></i>Create Account
-                        </button>
-                    </form>
-                    
-                    <hr class="my-4">
-                    
-                    <p class="text-center mb-0">
-                        <span class="text-secondary small">Already registered?</span>
-                        <a href="{{ url_for('login') }}" class="small fw-semibold text-decoration-none">Sign in</a>
-                    </p>
+    <section class="glass-panel auth-card p-4 p-lg-5" data-aos="fade-up">
+        <div class="text-center mb-4">
+            <span class="soft-badge mb-3">Free Account</span>
+            <h1 class="h2 mb-2">Create your profile</h1>
+            <p class="text-muted mb-0">Join the app with stronger password requirements and immediate dashboard access.</p>
+        </div>
+        <form action="{{ url_for('signup') }}" method="post" class="vstack gap-3">
+            <div data-aos="fade-up" data-aos-delay="50">
+                <label for="email" class="form-label fw-semibold">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
+                    <input id="email" type="email" name="email" autocomplete="email" placeholder="you@example.com" class="form-control" required>
                 </div>
             </div>
-            
-            <div class="auth-footer text-center mt-4">
-                <p class="text-secondary small mb-0">
-                    <i class="fa-solid fa-shield-halved me-1"></i>
-                    Your health data is secure and private
-                </p>
+            <div data-aos="fade-up" data-aos-delay="100">
+                <label for="password" class="form-label fw-semibold">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                    <input id="password" type="password" name="password" autocomplete="new-password" placeholder="At least 8 characters" class="form-control" minlength="8" required>
+                </div>
             </div>
-        </div>
-    </div>
+            <div data-aos="fade-up" data-aos-delay="150">
+                <label for="confirm_password" class="form-label fw-semibold">Confirm Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                    <input id="confirm_password" type="password" name="confirm_password" autocomplete="new-password" placeholder="Re-enter your password" class="form-control" minlength="8" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg mt-2" data-aos="fade-up" data-aos-delay="200">Create Account</button>
+        </form>
+        <div class="divider"></div>
+        <p class="text-center mb-0">Already registered? <a href="{{ url_for('login') }}" class="text-primary fw-semibold">Sign in</a></p>
+    </section>
 </div>
 {% endblock %}
-

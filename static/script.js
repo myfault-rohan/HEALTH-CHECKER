@@ -1,3 +1,5 @@
+const STORAGE_KEY = "hc_theme_mode";
+
 function showLoadingOverlay() {
     const overlay = document.getElementById("loading-overlay");
     if (overlay) overlay.classList.remove("d-none");
@@ -9,254 +11,447 @@ function hideLoadingOverlay() {
 }
 
 function setThemeMode(mode) {
-    const body = document.body;
-    if (!body) return;
     const darkMode = mode === "dark";
-    body.classList.toggle("theme-dark", darkMode);
-    body.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
+    document.body.classList.toggle("dark-mode", darkMode);
+    document.documentElement.classList.remove("preload-dark");
+    document.body.setAttribute("data-bs-theme", darkMode ? "dark" : "light");
 }
 
 function setupThemeToggle() {
     const toggle = document.getElementById("theme-toggle");
-    if (!toggle) return;
-    const storageKey = "hc_theme_mode";
-    const savedMode = localStorage.getItem(storageKey) || "light";
+    const savedMode = localStorage.getItem(STORAGE_KEY) || "light";
     setThemeMode(savedMode);
-    const updateButton = () => {
-        const darkMode = document.body.classList.contains("theme-dark");
-        toggle.innerHTML = darkMode ? '<i class="fa-solid fa-sun me-1"></i>Day' : '<i class="fa-solid fa-moon me-1"></i>Night';
-    };
-    updateButton();
+    if (!toggle) return;
+
     toggle.addEventListener("click", () => {
-        const nextMode = document.body.classList.contains("theme-dark") ? "light" : "dark";
+        const nextMode = document.body.classList.contains("dark-mode") ? "light" : "dark";
+        localStorage.setItem(STORAGE_KEY, nextMode);
         setThemeMode(nextMode);
-        localStorage.setItem(storageKey, nextMode);
-        updateButton();
     });
 }
 
-// Functions for other pages
-function setupSymptomsPage() {
-    const form = document.getElementById("symptom-form");
-    if (form) {
-        form.addEventListener("submit", () => showLoadingOverlay());
-    }
-
-    const searchInput = document.getElementById("symptom-search");
-    if (searchInput) {
-        searchInput.addEventListener("input", (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            const items = document.querySelectorAll(".symptom-item");
-            if (query === "") {
-                items.forEach(item => item.classList.add("d-none"));
-                return;
-            }
-            items.forEach(item => {
-                const symptomName = item.getAttribute("data-symptom");
-                if (symptomName.includes(query)) {
-                    item.classList.remove("d-none");
-                } else {
-                    item.classList.add("d-none");
-                }
-            });
+function setupAOS() {
+    if (window.AOS) {
+        window.AOS.init({
+            duration: 650,
+            once: true,
+            easing: "ease-out-cubic",
         });
     }
+}
 
-    const checkboxes = document.querySelectorAll(".symptom-checkbox");
+function setupWorkflowProgress() {
+    const track = document.getElementById("workflow-track");
+    if (!track) return;
+    const steps = Array.from(track.querySelectorAll(".workflow-step"));
+    const activeIndex = Math.max(
+        0,
+        steps.findIndex((step) => step.classList.contains("is-active"))
+    );
+    const width = steps.length > 1 ? (activeIndex / (steps.length - 1)) * 100 : 0;
+    track.style.setProperty("--progress-width", `${width}%`);
+}
+
+function setupRevealSections() {
+    const nodes = document.querySelectorAll(".reveal-on-scroll");
+    if (!nodes.length) return;
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                }
+            });
+        },
+        { threshold: 0.2 }
+    );
+
+    nodes.forEach((node) => observer.observe(node));
+}
+
+function setupCountUp() {
+    const targets = document.querySelectorAll("[data-countup]");
+    if (!targets.length) return;
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const node = entry.target;
+                const endValue = Number(node.dataset.countup || "0");
+                const suffix = node.dataset.suffix || "";
+                const duration = 1000;
+                const start = performance.now();
+
+                const tick = (now) => {
+                    const progress = Math.min((now - start) / duration, 1);
+                    node.textContent = `${Math.floor(progress * endValue)}${suffix}`;
+                    if (progress < 1) {
+                        requestAnimationFrame(tick);
+                    }
+                };
+
+                requestAnimationFrame(tick);
+                observer.unobserve(node);
+            });
+        },
+        { threshold: 0.4 }
+    );
+
+    targets.forEach((target) => observer.observe(target));
+}
+
+function setupTypewriter() {
+    const target = document.getElementById("hero-typewriter");
+    if (!target) return;
+
+    const phrases = [
+        "Check your symptoms.",
+        "Understand your health.",
+        "Get guidance fast.",
+    ];
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let deleting = false;
+
+    const type = () => {
+        const phrase = phrases[phraseIndex];
+        target.textContent = deleting
+            ? phrase.slice(0, charIndex--)
+            : phrase.slice(0, charIndex++);
+
+        if (!deleting && charIndex > phrase.length + 1) {
+            deleting = true;
+            setTimeout(type, 1200);
+            return;
+        }
+
+        if (deleting && charIndex < 0) {
+            deleting = false;
+            phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+
+        setTimeout(type, deleting ? 35 : 70);
+    };
+
+    type();
+}
+
+function setupRippleButtons() {
+    document.querySelectorAll(".btn").forEach((button) => {
+        button.addEventListener("click", (event) => {
+            const ripple = document.createElement("span");
+            ripple.className = "ripple";
+            ripple.style.left = `${event.clientX - button.getBoundingClientRect().left}px`;
+            ripple.style.top = `${event.clientY - button.getBoundingClientRect().top}px`;
+            button.appendChild(ripple);
+            window.setTimeout(() => ripple.remove(), 650);
+        });
+    });
+}
+
+function getSelectedSymptoms() {
+    const hiddenContainer = document.getElementById("selected-symptom-inputs");
+    if (!hiddenContainer) return [];
+    return Array.from(
+        hiddenContainer.querySelectorAll('input[name="symptoms"]')
+    ).map((input) => input.value);
+}
+
+function refreshSymptomResults() {
+    const searchInput = document.getElementById("symptom-search");
+    if (searchInput && window.htmx) {
+        window.htmx.trigger(searchInput, "keyup");
+    }
+}
+
+function syncSelectedSymptomInputs() {
+    const hiddenContainer = document.getElementById("selected-symptom-inputs");
     const selectedContainer = document.getElementById("selected-symptoms");
     const countDisplay = document.getElementById("symptom-count");
-    const detailFields = document.querySelectorAll(".detail-field");
+    if (!hiddenContainer) return;
 
-    function updateSelections() {
-        if (!selectedContainer) return;
-        
+    const values = getSelectedSymptoms();
+
+    if (selectedContainer) {
         selectedContainer.innerHTML = "";
-        let count = 0;
-        const selectedNames = [];
-
-        checkboxes.forEach(cb => {
-            const card = cb.closest(".symptom-card");
-            if (cb.checked) {
-                count++;
-                selectedNames.push(cb.value.toLowerCase());
-                
-                if (card) {
-                    card.classList.remove("border-0");
-                    card.classList.add("border-primary", "bg-primary-subtle");
-                }
-
-                // create pill
-                const pill = document.createElement("span");
-                pill.className = "badge rounded-pill symptom-pill bg-primary px-3 py-2 text-white";
-                pill.textContent = cb.nextElementSibling.textContent;
-                selectedContainer.appendChild(pill);
-            } else {
-                if (card) {
-                    card.classList.add("border-0");
-                    card.classList.remove("border-primary", "bg-primary-subtle");
-                }
-            }
+        values.forEach((value) => {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "symptom-pill removable-pill";
+            chip.innerHTML = `<span>${value}</span><span class="pill-remove" aria-hidden="true">&times;</span>`;
+            chip.setAttribute("aria-label", `Remove ${value}`);
+            chip.addEventListener("click", () => {
+                updateSelectedSymptom(value, false);
+                refreshSymptomResults();
+            });
+            selectedContainer.appendChild(chip);
         });
-
-        if(countDisplay) {
-            countDisplay.textContent = count;
+        if (!values.length) {
+            const emptyState = document.createElement("p");
+            emptyState.className = "text-muted mb-0";
+            emptyState.textContent = "No symptoms selected yet.";
+            selectedContainer.appendChild(emptyState);
         }
+    }
 
-        // update optional details visibility
-        detailFields.forEach(field => {
-            const requires = field.getAttribute("data-requires").split(",");
-            const shouldShow = requires.some(req => selectedNames.includes(req.trim().toLowerCase()));
-            if (shouldShow) {
-                field.classList.remove("d-none");
-            } else {
-                field.classList.add("d-none");
-            }
+    if (countDisplay) {
+        countDisplay.textContent = values.length;
+    }
+
+    document.querySelectorAll(".detail-field").forEach((field) => {
+        const requires = (field.dataset.requires || "")
+            .split(",")
+            .map((item) => item.trim().toLowerCase());
+        const shouldShow = requires.some((item) => values.includes(item));
+        field.classList.toggle("d-none", !shouldShow);
+    });
+}
+
+function updateSelectedSymptom(name, checked) {
+    const hiddenContainer = document.getElementById("selected-symptom-inputs");
+    if (!hiddenContainer) return;
+
+    const existing = Array.from(
+        hiddenContainer.querySelectorAll('input[name="symptoms"]')
+    ).find((input) => input.value === name);
+    if (checked && !existing) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "symptoms";
+        input.value = name;
+        hiddenContainer.appendChild(input);
+    } else if (!checked && existing) {
+        existing.remove();
+    }
+    syncSelectedSymptomInputs();
+}
+
+function updateSymptomResultButton(button) {
+    const selected = getSelectedSymptoms().includes(button.dataset.symptom);
+    button.dataset.selected = selected ? "true" : "false";
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+    button.classList.toggle("is-selected", selected);
+    const state = button.querySelector(".symptom-result-state");
+    if (state) {
+        state.textContent = selected ? "Added" : "Add";
+    }
+}
+
+function bindSymptomCards(scope = document) {
+    scope.querySelectorAll(".symptom-result-button").forEach((button) => {
+        updateSymptomResultButton(button);
+        button.addEventListener("click", () => {
+            const isSelected = button.dataset.selected === "true";
+            updateSelectedSymptom(button.dataset.symptom, !isSelected);
+            updateSymptomResultButton(button);
         });
+    });
+}
+
+function setupVoiceInput() {
+    const searchInput = document.getElementById("symptom-search");
+    const button = document.getElementById("voice-search-button");
+    const heardText = document.getElementById("voice-heard-text");
+    const audioWave = document.getElementById("audio-wave");
+    const zoneInput = document.getElementById("symptom-zone");
+    if (!searchInput || !button) return;
+
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        button.classList.add("d-none");
+        if (audioWave) audioWave.classList.remove("is-visible");
+        return;
     }
 
-    if (checkboxes.length > 0) {
-        checkboxes.forEach(cb => cb.addEventListener("change", updateSelections));
-        updateSelections(); // initial call
-    }
-}
-function setupContactPage() {
-    const form = document.getElementById("message-form");
-    if (form) form.addEventListener("submit", () => showLoadingOverlay());
-}
-function setupLoginPage() {
-    const form = document.getElementById("login-form");
-    if (form) form.addEventListener("submit", () => showLoadingOverlay());
-}
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
 
+    recognition.onstart = () => {
+        button.classList.add("is-listening");
+        if (audioWave) audioWave.classList.add("is-visible");
+    };
 
-/**
- * Toggles the light scene between on and off states.
- * @param {boolean} [forceState] - Optional state to force (true for on, false for off).
- */
-function toggleLight(forceState) {
-    const sceneUi = document.getElementById("light-scene-ui");
-    if (!sceneUi) return;
+    recognition.onend = () => {
+        button.classList.remove("is-listening");
+        if (audioWave) audioWave.classList.remove("is-visible");
+    };
 
-    const loginCard = document.getElementById("login-card");
-    const currentState = sceneUi.dataset.lightOn === "true";
-    const nextState = typeof forceState === "boolean" ? forceState : !currentState;
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.trim().toLowerCase();
+        searchInput.value = transcript;
+        if (zoneInput) zoneInput.value = "";
+        if (heardText) heardText.textContent = `Heard: ${transcript}`;
+        if (window.htmx) {
+            window.htmx.trigger(searchInput, "keyup");
+        }
+    };
 
-    sceneUi.dataset.lightOn = String(nextState);
-    sceneUi.classList.toggle("is-on", nextState);
-    sceneUi.style.setProperty("--light-intensity", nextState ? "1" : "0");
-
-    if (loginCard) {
-        loginCard.classList.toggle("active", nextState);
-    }
-    
-    document.body.classList.toggle('light-on', nextState);
+    button.addEventListener("click", () => recognition.start());
 }
 
-/**
- * Sets up the login scene interactions.
- */
-function setupLoginScene() {
-    const wallSwitch = document.getElementById("wall-switch");
-    const sceneUi = document.getElementById("light-scene-ui");
+function setupSymptomsPage() {
+    const form = document.getElementById("symptom-form");
+    if (!form) return;
 
-    if (!wallSwitch || !sceneUi) return;
+    bindSymptomCards(document);
+    syncSelectedSymptomInputs();
+    setupVoiceInput();
 
-    document.body.classList.add("is-login-page");
-
-    wallSwitch.addEventListener("click", () => {
-        toggleLight();
+    document.body.addEventListener("htmx:afterSwap", (event) => {
+        if (event.target.id === "symptom-results") {
+            bindSymptomCards(event.target);
+            syncSelectedSymptomInputs();
+        }
     });
 
-    toggleLight(false); // Initial state should be off
+    form.addEventListener("submit", (event) => {
+        if (!getSelectedSymptoms().length) {
+            event.preventDefault();
+            document.getElementById("symptom-search")?.focus();
+            return;
+        }
+        showLoadingOverlay();
+    });
 }
 
-// Main initialization
+function setupConditionPage() {
+    document.querySelectorAll(".confidence-bar").forEach((bar) => {
+        window.setTimeout(() => {
+            bar.style.width = `${bar.dataset.confidence}%`;
+        }, 100);
+    });
+
+    const reportButtons = document.querySelectorAll(".btn-download");
+    reportButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            button.classList.add("is-loading");
+        });
+    });
+
+    const container = document.getElementById("conditions-page");
+    if (!container) return;
+
+    const highUrgency = container.dataset.highUrgency === "true";
+    const checkId = container.dataset.checkId;
+
+    if (highUrgency) {
+        const warning = document.getElementById("conditions-warning-banner");
+        if (warning) warning.classList.add("is-pulsing");
+        return;
+    }
+
+    if (window.confetti && checkId) {
+        const seenKey = `hc_confetti_${checkId}`;
+        if (!sessionStorage.getItem(seenKey)) {
+            sessionStorage.setItem(seenKey, "1");
+            window.setTimeout(() => {
+                window.confetti({
+                    particleCount: 140,
+                    spread: 80,
+                    origin: { y: 0.55 },
+                });
+            }, 250);
+        }
+    }
+}
+
+function setupProfileAccordion() {
+    document.querySelectorAll(".history-toggle").forEach((toggle) => {
+        toggle.addEventListener("click", () => {
+            const accordion = toggle.closest(".history-card")?.querySelector(".history-accordion");
+            toggle.classList.toggle("is-open");
+            toggle.textContent = toggle.classList.contains("is-open") ? "Collapse" : "Expand";
+            toggle.setAttribute(
+                "aria-expanded",
+                toggle.classList.contains("is-open") ? "true" : "false"
+            );
+            if (accordion) {
+                accordion.style.maxHeight = toggle.classList.contains("is-open")
+                    ? `${accordion.scrollHeight + 20}px`
+                    : "0px";
+            }
+        });
+    });
+}
+
+function setupInfoChat() {
+    const shell = document.getElementById("info-chat");
+    if (!shell) return;
+
+    const windowEl = document.getElementById("chat-window");
+    const form = document.getElementById("info-form");
+    const ageInput = document.getElementById("chat-age-input");
+    const ageHidden = document.getElementById("info-age");
+    const genderHidden = document.getElementById("info-gender");
+    const prompt = document.getElementById("chat-prompt");
+    const chipButtons = document.querySelectorAll(".chat-chip");
+
+    const appendBubble = (text, type = "bot") => {
+        const bubble = document.createElement("div");
+        bubble.className = `chat-bubble ${type}`;
+        bubble.textContent = text;
+        windowEl.appendChild(bubble);
+        windowEl.scrollTop = windowEl.scrollHeight;
+        return bubble;
+    };
+
+    window.setTimeout(() => {
+        prompt.classList.add("d-none");
+        appendBubble("Hi! Before we start, how old are you? 👋", "bot");
+    }, 900);
+
+    shell.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const age = ageInput.value.trim();
+        if (!age) return;
+        ageHidden.value = age;
+        appendBubble(age, "user");
+        ageInput.value = "";
+        appendBubble("Great! And your gender?", "bot");
+        document.getElementById("gender-chip-group").classList.remove("d-none");
+    });
+
+    chipButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            chipButtons.forEach((chip) => chip.classList.remove("is-selected"));
+            button.classList.add("is-selected");
+            genderHidden.value = button.dataset.gender;
+            appendBubble(button.textContent.trim(), "user");
+            appendBubble("Perfect! Let's check your symptoms 🩺", "bot");
+            window.setTimeout(() => form.submit(), 1200);
+        });
+    });
+}
+
+function setupLandingPage() {
+    setupTypewriter();
+    setupCountUp();
+}
+
+function setupLoadingForms() {
+    document.querySelectorAll("form").forEach((form) => {
+        if (form.id === "info-chat") return;
+        form.addEventListener("submit", () => showLoadingOverlay());
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     setupThemeToggle();
+    setupAOS();
+    setupWorkflowProgress();
+    setupRevealSections();
+    setupRippleButtons();
+    setupLandingPage();
     setupSymptomsPage();
-    setupContactPage();
-    setupLoginPage();
-    
-    // Initialize the login scene if the container exists
-    if (document.getElementById("light-scene-ui")) {
-        setupLoginScene();
-    }
-    
-    // Custom cursor functionality
-    const cursor = document.getElementById('custom-cursor');
-    if (cursor) {
-        const cursorDot = cursor.querySelector('.cursor-dot');
-        const cursorRing = cursor.querySelector('.cursor-ring');
-        
-        let mouseX = 0, mouseY = 0;
-        let cursorX = 0, cursorY = 0;
-        let ringX = 0, ringY = 0;
-        
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
-        
-        // Add trailing particles
-        const trailContainer = document.createElement('div');
-        trailContainer.className = 'cursor-trail';
-        cursor.appendChild(trailContainer);
-        
-        const trailCount = 8;
-        const trails = [];
-        
-        for (let i = 0; i < trailCount; i++) {
-            const trail = document.createElement('div');
-            trail.className = 'cursor-trail-dot';
-            trail.style.opacity = (1 - i / trailCount) * 0.5;
-            trail.style.transform = `scale(${1 - i / trailCount})`;
-            trailContainer.appendChild(trail);
-            trails.push({ x: 0, y: 0, element: trail });
-        }
-        
-        function updateCursor() {
-            // Smooth follow for dot
-            cursorX += (mouseX - cursorX) * 0.15;
-            cursorY += (mouseY - cursorY) * 0.15;
-            
-            if (cursorDot) {
-                cursorDot.style.left = mouseX + 'px';
-                cursorDot.style.top = mouseY + 'px';
-            }
-            
-            if (cursorRing) {
-                // Ring follows with slight delay for smoothness
-                ringX += (mouseX - ringX) * 0.12;
-                ringY += (mouseY - ringY) * 0.12;
-                cursorRing.style.left = ringX + 'px';
-                cursorRing.style.top = ringY + 'px';
-            }
-            
-            // Update trail positions
-            let prevX = mouseX;
-            let prevY = mouseY;
-            trails.forEach((trail, i) => {
-                trail.x += (prevX - trail.x) * (0.3 - i * 0.03);
-                trail.y += (prevY - trail.y) * (0.3 - i * 0.03);
-                trail.element.style.left = trail.x + 'px';
-                trail.element.style.top = trail.y + 'px';
-                prevX = trail.x;
-                prevY = trail.y;
-            });
-            
-            requestAnimationFrame(updateCursor);
-        }
-        
-        // Add hover effect on interactive elements
-        const interactiveElements = document.querySelectorAll('a, button, .btn, input, .nav-link, [role="button"]');
-        interactiveElements.forEach(el => {
-            el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
-            el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
-        });
-        
-        updateCursor();
-    }
-    
+    setupConditionPage();
+    setupProfileAccordion();
+    setupInfoChat();
+    setupLoadingForms();
     hideLoadingOverlay();
 });
 

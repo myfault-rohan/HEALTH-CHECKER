@@ -9,4 +9,6 @@ __pycache__/
 .env
 node_modules/
 health_checker.db
+*.db
+instance/
 model.pkl
