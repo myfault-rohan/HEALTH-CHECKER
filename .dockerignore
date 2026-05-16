@@ -1,0 +1,12 @@
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+.git
+.gitignore
+health_checker.db
+data/

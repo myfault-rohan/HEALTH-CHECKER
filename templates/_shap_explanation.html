@@ -1,0 +1,67 @@
+{# SHAP Explanation Panel — included inside conditions.html
+   Variables expected:
+     shap_data  — dict from shap_service.get_local_shap_explanation()
+     predicted_disease — string, top ML prediction
+#}
+{% if shap_data and shap_data.available and shap_data.features %}
+<section class="glass-panel p-4 p-lg-5 mb-4 shap-panel" data-aos="fade-up" data-aos-delay="80">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <div class="section-label">Explainable AI · SHAP</div>
+            <h2 class="h4 mb-1">Why did the model predict <em>{{ shap_data.predicted_disease }}</em>?</h2>
+            <p class="text-muted small mb-0">
+                Feature importance shows which symptoms pushed the prediction <span class="shap-badge shap-badge-pos">toward</span>
+                or <span class="shap-badge shap-badge-neg">away from</span> this diagnosis.
+            </p>
+        </div>
+        <div class="shap-legend d-flex gap-3 align-items-center flex-shrink-0">
+            <span class="d-flex align-items-center gap-1 small">
+                <span class="shap-dot shap-dot-pos"></span> Increases likelihood
+            </span>
+            <span class="d-flex align-items-center gap-1 small">
+                <span class="shap-dot shap-dot-neg"></span> Decreases likelihood
+            </span>
+        </div>
+    </div>
+
+    <div class="shap-chart" role="list" aria-label="SHAP feature importance chart">
+        {% for feat in shap_data.features %}
+        <div class="shap-row" role="listitem" data-shap="{{ feat.shap_value }}" data-direction="{{ feat.direction }}">
+            {# Feature label #}
+            <div class="shap-label" title="{{ feat.display_name }}{% if feat.present %} (reported){% endif %}">
+                {{ feat.display_name }}
+                {% if feat.present %}
+                <span class="shap-present-dot" aria-label="symptom reported">●</span>
+                {% endif %}
+            </div>
+
+            {# Waterfall bar track #}
+            <div class="shap-bar-track">
+                <div
+                    class="shap-bar shap-bar-{{ feat.direction }}"
+                    data-target-width="{{ feat.bar_pct }}%"
+                    role="meter"
+                    aria-valuenow="{{ feat.bar_pct }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                ></div>
+            </div>
+
+            {# Numeric SHAP value #}
+            <div class="shap-value shap-value-{{ feat.direction }}">
+                {{ '+' if feat.shap_value > 0 else '' }}{{ "%.3f"|format(feat.shap_value) }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <p class="text-muted small mt-4 mb-0 shap-disclaimer">
+        <i class="fa-solid fa-circle-info me-1"></i>
+        SHAP (SHapley Additive exPlanations) values show each symptom's contribution to the ML prediction.
+        A positive value means the symptom pushed the model toward this diagnosis; negative means away from it.
+        This is not a clinical diagnosis — always consult a licensed physician.
+    </p>
+</section>
+{% elif shap_data and not shap_data.available %}
+{# Silent degradation — no visible error shown to user #}
+{% endif %}

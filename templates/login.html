@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Login | Health Checker Pro{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper">
+    <section class="glass-panel auth-card p-4 p-lg-5" data-aos="fade-up">
+        <div class="text-center mb-4">
+            <span class="soft-badge mb-3">Secure Access</span>
+            <h1 class="h2 mb-2">Welcome back</h1>
+            <p class="text-muted mb-0">Sign in to continue with your dashboard and history.</p>
+        </div>
+        <form id="login-form" action="{{ url_for('auth.login') }}" method="post" class="vstack gap-3">
+            <div data-aos="fade-up" data-aos-delay="50">
+                <label for="email" class="form-label fw-semibold">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
+                    <input id="email" type="email" name="email" autocomplete="email" placeholder="you@example.com" class="form-control" required>
+                </div>
+            </div>
+            <div data-aos="fade-up" data-aos-delay="100">
+                <label for="password" class="form-label fw-semibold">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                    <input id="password" type="password" name="password" autocomplete="current-password" placeholder="Enter your password" class="form-control" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg mt-2" data-aos="fade-up" data-aos-delay="150">Sign In</button>
+        </form>
+        <div class="divider"></div>
+        <p class="text-center mb-0">No account yet? <a href="{{ url_for('auth.signup') }}" class="text-primary fw-semibold">Create one</a></p>
+    </section>
+</div>
+{% endblock %}

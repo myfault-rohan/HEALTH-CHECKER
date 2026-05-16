@@ -1,0 +1,34 @@
+[project]
+name = "health-checker-pro"
+version = "2.0.0"
+description = "ML-powered symptom analysis and health diagnostics platform"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "slow: marks tests that take a while to run (ML model loading, etc.)",
+    "integration: marks integration tests requiring full app context",
+]
+
+[tool.coverage.run]
+source = ["app", "predictor"]
+omit = ["tests/*", "venv/*", "model/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+fail_under = 60
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["app", "tests", "ml_service"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B"]
+ignore = ["E501"]

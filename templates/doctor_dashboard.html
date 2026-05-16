@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Portal | Health Checker Pro{% endblock %}
+
+{% block content %}
+<section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <div class="section-label">Enterprise Access</div>
+            <h1 class="h2 mb-1"><i class="fa-solid fa-stethoscope text-primary me-2"></i>Doctor Portal</h1>
+            <p class="text-muted mb-0">Real-time aggregate view of patient diagnostic scans across the system.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 text-end">
+            <span class="badge bg-danger p-2 fs-6">High Urgency: {{ high_urgency }}</span>
+            <span class="badge bg-primary p-2 fs-6 ms-2">Total Scans: {{ total_checks }}</span>
+        </div>
+    </div>
+</section>
+
+<section class="glass-panel p-4" data-aos="fade-up" data-aos-delay="50">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Patient Email</th>
+                    <th>Top Match</th>
+                    <th>Urgency</th>
+                    <th>Confidence</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in results %}
+                    {% set top = res.condition_details[0] if res.condition_details else None %}
+                    <tr>
+                        <td>{{ res.checked_at }}</td>
+                        <td><span class="text-muted">{{ res.patient_email }}</span></td>
+                        <td><strong>{{ top.name if top else 'Unknown' }}</strong></td>
+                        <td>
+                            {% if top %}
+                                <span class="urgency-badge urgency-{{ top.urgency }}">{{ top.urgency|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ top.confidence if top else 0 }}%</td>
+                        <td>
+                            <a href="{{ url_for('reports.export_fhir', check_id=res.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fa-solid fa-file-medical me-1"></i>EHR Export
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-center py-4">No patient data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

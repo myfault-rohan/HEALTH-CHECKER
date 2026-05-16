@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Results | Health Checker Pro{% endblock %}
+
+{% block content %}
+<div id="conditions-page" data-check-id="{{ current_check_id }}" data-high-urgency="{{ 'true' if high_urgency_present else 'false' }}">
+    <section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="section-label">Step 3</div>
+                <h1 class="h2 mb-2">Condition Matches</h1>
+                <p class="text-muted mb-0">{{ analysis.suggestion or 'Review the ranked matches and urgency guidance below.' }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('checker.symptoms') }}" class="btn btn-outline-primary">Refine Symptoms</a>
+                <a href="{{ url_for('checker.treatment', condition_name=condition_details[0].name) }}" class="btn btn-primary">Open Guidance</a>
+            </div>
+        </div>
+    </section>
+
+    {% if high_urgency_present %}
+        <section id="conditions-warning-banner" class="warning-banner mb-4" data-aos="fade-up">
+            <strong>High urgency pattern detected.</strong> Review the warning signs carefully and seek clinical help if symptoms worsen.
+        </section>
+    {% endif %}
+
+    <section class="glass-panel p-4 p-lg-5 mb-4" data-aos="fade-up" data-aos-delay="50">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-7">
+                <div class="section-label">Top ML Match</div>
+                <h2 class="display-6 mb-2">{{ predicted_disease }}</h2>
+                <p class="text-muted mb-0">Selected symptoms: {{ selected_symptoms|join(', ') }}</p>
+            </div>
+            <div class="col-lg-5">
+                {% include "report_template.html" %}
+            </div>
+        </div>
+    </section>
+
+    {% include "_shap_explanation.html" %}
+
+    <section class="row g-4">
+        {% for condition in condition_details %}
+            <div class="col-lg-6">
+                <article class="glass-panel p-4 h-100 condition-card" style="animation-delay: {{ loop.index0 * 150 }}ms;" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <div class="section-label">{{ condition.category }}</div>
+                            <h3 class="h4 mb-1">{{ condition.name }}</h3>
+                            <p class="text-muted mb-0">{{ condition.description }}</p>
+                        </div>
+                        <span class="urgency-badge urgency-{{ condition.urgency }}">{{ condition.urgency|capitalize }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>{{ condition.match_label }}</strong>
+                        <span>{{ condition.confidence }}%</span>
+                    </div>
+                    <div class="confidence-meter mb-3">
+                        <div class="confidence-bar" data-confidence="{{ condition.confidence }}"></div>
+                    </div>
+                    <ul class="text-muted small mb-4">
+                        {% for cause in condition.possible_causes %}
+                            <li>{{ cause|title }}</li>
+                        {% endfor %}
+                    </ul>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('checker.details', condition_name=condition.name) }}" class="btn btn-outline-primary btn-sm">View Details</a>
+                        <a href="{{ url_for('checker.treatment', condition_name=condition.name) }}" class="btn btn-primary btn-sm">Treatment</a>
+                    </div>
+                </article>
+            </div>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+{% endblock %}

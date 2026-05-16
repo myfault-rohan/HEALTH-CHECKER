@@ -1,0 +1,12 @@
+flask
+gunicorn
+flask-limiter
+reportlab
+markupsafe
+SQLAlchemy
+psycopg2-binary
+requests
+scikit-learn
+pandas
+numpy
+shap

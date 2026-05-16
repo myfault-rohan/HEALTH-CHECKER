@@ -1,0 +1,33 @@
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.DS_Store
+.env
+node_modules/
+health_checker.db
+*.db
+instance/
+
+# Coverage & testing
+.coverage
+coverage.xml
+htmlcov/
+
+# Model binaries — use Git LFS or release attachments for large files
+model/model.pkl
+model/chatbot_model.pkl
+model/dataset.csv
+
+# Analysis output images — embedded in notebook already
+analysis/*.png
+
+# Scratch / temp files
+tests/scratch_*.py
+
+# IDE
+.vscode/
+.idea/
