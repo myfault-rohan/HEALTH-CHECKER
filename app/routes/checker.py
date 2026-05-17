@@ -380,11 +380,20 @@ def check_symptoms():
         save_history_entry(email, history_entry, check_result_id=check_id)
 
     session["last_check_id"] = check_id
+    # Guest fallback: store result directly in session so conditions page
+    # can always render SHAP panel and results without a DB lookup
+    if not email:
+        # Exclude shap_data from session (too large); store flag only
+        slim = {k: v for k, v in check_result.items() if k != "shap_data"}
+        slim["shap_data"] = check_result.get("shap_data", {"available": False})
+        session["guest_check_result"] = slim
+
     if condition_details:
         session["active_condition"] = condition_details[0]["name"]
 
     flash("Prediction completed. Review your condition matches.", "success")
     return redirect(url_for("checker.conditions"))
+
 
 
 @checker_bp.route("/conditions")

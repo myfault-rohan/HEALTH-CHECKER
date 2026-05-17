@@ -167,7 +167,8 @@ def has_profile():
 def get_current_check_result(load_latest=False):
     email = normalize_email(session.get("email"))
     if not email:
-        return None
+        # Guest user — return result stored directly in session
+        return session.get("guest_check_result")
 
     check_id = session.get("last_check_id")
     if check_id:
