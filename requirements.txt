@@ -4,9 +4,9 @@ flask-limiter
 reportlab
 markupsafe
 SQLAlchemy
-psycopg2-binary
 requests
 scikit-learn
 pandas
 numpy
 shap
+# psycopg2-binary  # uncomment when using PostgreSQL in production
