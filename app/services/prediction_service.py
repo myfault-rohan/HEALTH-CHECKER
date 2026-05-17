@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
 from collections import defaultdict
-
 
 symptoms_conditions = {
     # Head & Brain

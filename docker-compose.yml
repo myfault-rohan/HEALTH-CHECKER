@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: health_checker_web
+    ports:
+      - "10000:10000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_SECRET_KEY=super-secure-production-key-here
+      - DATABASE_URL=postgresql://health_user:securepassword@db:5432/health_db
+      - ML_SERVICE_URL=http://ml:8000
+    depends_on:
+      - db
+      - ml
+    restart: unless-stopped
+
+  ml:
+    build:
+      context: .
+      dockerfile: ml_service/Dockerfile
+    container_name: health_checker_ml
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    container_name: health_checker_db
+    environment:
+      - POSTGRES_USER=health_user
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=health_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:

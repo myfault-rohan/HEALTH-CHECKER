@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Shared helpers, constants, and decorators used across route blueprints."""
 
 import logging

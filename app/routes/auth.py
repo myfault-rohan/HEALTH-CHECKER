@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Authentication routes: login, signup, logout."""
 
 import logging

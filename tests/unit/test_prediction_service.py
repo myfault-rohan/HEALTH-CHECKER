@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 """Unit tests for the prediction service — the core diagnostic engine."""
 
-import pytest
 
 from app.services.prediction_service import (
     compute_condition_matches,

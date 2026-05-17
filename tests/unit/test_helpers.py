@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 """Unit tests for shared route helpers — utilities, formatters, session logic."""
 
-import pytest
 
 from app.routes.helpers import (
     build_history_stats,

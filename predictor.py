@@ -4,6 +4,7 @@ Connects to the FastAPI ML Microservice to perform disease inference.
 """
 import logging
 import os
+
 import requests
 
 logger = logging.getLogger(__name__)
@@ -12,14 +13,14 @@ ML_SERVICE_URL = os.getenv("ML_SERVICE_URL", "http://127.0.0.1:8000")
 
 # Fixed symptom order as trained in the model dataset.
 FEATURE_SYMPTOMS = [
-    "headache", "dizziness", "blurred_vision", "confusion", "cough", 
-    "shortness_of_breath", "chest_pain", "wheezing", "palpitations", 
-    "abdominal_pain", "nausea", "vomiting", "diarrhea", "constipation", 
-    "bloating", "heartburn", "urinary_problems", "fever", "fatigue", 
-    "chills", "night_sweats", "weight_loss", "insomnia", "loss_of_appetite", 
-    "sore_throat", "runny_nose", "sneezing", "congestion", "rash", 
-    "swelling", "joint_pain", "back_pain", "muscle_pain", "stiffness", 
-    "acidity", "leg_pain", "body_weakness", "stomach_pain", "waist_pain", 
+    "headache", "dizziness", "blurred_vision", "confusion", "cough",
+    "shortness_of_breath", "chest_pain", "wheezing", "palpitations",
+    "abdominal_pain", "nausea", "vomiting", "diarrhea", "constipation",
+    "bloating", "heartburn", "urinary_problems", "fever", "fatigue",
+    "chills", "night_sweats", "weight_loss", "insomnia", "loss_of_appetite",
+    "sore_throat", "runny_nose", "sneezing", "congestion", "rash",
+    "swelling", "joint_pain", "back_pain", "muscle_pain", "stiffness",
+    "acidity", "leg_pain", "body_weakness", "stomach_pain", "waist_pain",
     "watery_eyes", "nightfall", "menstrual_pain", "dehydration", "cold", "stress"
 ]
 
@@ -52,8 +53,8 @@ def predict_disease(symptoms):
 
     try:
         response = requests.post(
-            f"{ML_SERVICE_URL}/predict_disease", 
-            json={"symptoms": binary_vector}, 
+            f"{ML_SERVICE_URL}/predict_disease",
+            json={"symptoms": binary_vector},
             timeout=5
         )
         if response.status_code == 200:

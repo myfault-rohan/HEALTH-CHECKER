@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Integration tests for HTTP routes — tests the full request/response cycle."""
 
 import pytest

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Core symptom-checker workflow: info → symptoms → check → conditions → details → treatment."""
 
 import logging
@@ -14,6 +13,7 @@ from flask import (
     session,
     url_for,
 )
+from predictor import predict_disease
 
 from app.models.user_store import (
     normalize_email,
@@ -21,20 +21,6 @@ from app.models.user_store import (
     save_history_entry,
     update_user_profile,
 )
-from app.services.chatbot_service import extract_symptoms_from_text
-from app.services.prediction_service import (
-    compute_condition_matches,
-    detect_emergency_signals,
-    get_condition_precautions,
-    get_searchable_symptoms,
-    get_symptom_categories,
-    normalize_symptom_name,
-    ordered_unique,
-    symptoms_conditions,
-)
-from predictor import predict_disease
-from app.services.shap_service import get_local_shap_explanation
-
 from app.routes.helpers import (
     BODY_ZONE_TARGETS,
     SYMPTOM_RESULTS_TEMPLATE,
@@ -52,6 +38,18 @@ from app.routes.helpers import (
     login_required,
     strip_icon_prefix,
 )
+from app.services.chatbot_service import extract_symptoms_from_text
+from app.services.prediction_service import (
+    compute_condition_matches,
+    detect_emergency_signals,
+    get_condition_precautions,
+    get_searchable_symptoms,
+    get_symptom_categories,
+    normalize_symptom_name,
+    ordered_unique,
+    symptoms_conditions,
+)
+from app.services.shap_service import get_local_shap_explanation
 
 logger = logging.getLogger(__name__)
 

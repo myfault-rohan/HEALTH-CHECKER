@@ -26,9 +26,10 @@ def _configure_logging():
 def create_app():
     _configure_logging()
 
+    from config import Config
+
     from app.models.user_store import init_db
     from app.routes import register_blueprints
-    from config import Config
 
     app = Flask(
         __name__,

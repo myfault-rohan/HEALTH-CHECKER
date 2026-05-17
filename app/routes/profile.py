@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Profile routes: profile view, CSV export, history management."""
 
 import csv
@@ -21,7 +20,6 @@ from app.models.user_store import (
     get_history_entries,
     normalize_email,
 )
-
 from app.routes.helpers import (
     build_history_stats,
     login_required,

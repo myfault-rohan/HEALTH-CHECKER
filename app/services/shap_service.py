@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """SHAP Explainability Service.
 
 Calls the ML microservice /explain endpoint and returns structured
@@ -113,6 +112,7 @@ def get_local_shap_explanation(symptoms: list[str]) -> dict:
         return _unavailable()
 
     import pickle
+
     import numpy as np
     import pandas as pd
 
@@ -143,8 +143,8 @@ def get_local_shap_explanation(symptoms: list[str]) -> dict:
     input_df = pd.DataFrame([vector], columns=features)
 
     try:
-        import shap as shap_lib
         import numpy as np
+        import shap as shap_lib
 
         explainer = shap_lib.TreeExplainer(model)
         shap_values = explainer.shap_values(input_df)  # shape: (n_samples, n_features, n_classes)

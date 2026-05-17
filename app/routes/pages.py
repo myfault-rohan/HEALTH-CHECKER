@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Static / public page routes: landing, about, contact."""
 
 import logging

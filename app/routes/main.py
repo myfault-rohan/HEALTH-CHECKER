@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Legacy compatibility shim.
 
 The actual route implementations have been split into separate blueprint

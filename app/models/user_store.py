@@ -1,10 +1,23 @@
 import json
 import os
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
+from sqlalchemy import (
+    Column,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    Text,
+    create_engine,
+    delete,
+    desc,
+    insert,
+    select,
+    update,
+)
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Text, select, insert, update, delete, desc
 
 engine = None
 metadata = MetaData()
@@ -44,7 +57,7 @@ def init_db(database_path=None):
         uri = f"sqlite:///{Path(db_path).resolve()}"
     elif uri.startswith("postgres://"):
         uri = uri.replace("postgres://", "postgresql://", 1)
-    
+
     engine = create_engine(uri)
     metadata.create_all(engine)
 

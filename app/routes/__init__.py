@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """HTTP route modules — registers all Flask Blueprints."""
 
 from app.routes.auth import auth_bp

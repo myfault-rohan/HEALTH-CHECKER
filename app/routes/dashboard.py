@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Dashboard routes: patient dashboard, doctor dashboard, stats API."""
 
 import logging
@@ -14,7 +13,6 @@ from app.models.user_store import (
     get_history_entries,
     normalize_email,
 )
-
 from app.routes.helpers import (
     build_history_stats,
     checker_sidebar_context,

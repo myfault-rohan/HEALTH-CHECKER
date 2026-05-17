@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Report routes: PDF download and FHIR JSON export."""
 
 import io
@@ -34,14 +33,13 @@ from app.models.user_store import (
     get_user_profile,
     normalize_email,
 )
-from app.services.prediction_service import ordered_unique
-
 from app.routes.helpers import (
     format_datetime_label,
     format_gender,
     login_required,
     strip_icon_prefix,
 )
+from app.services.prediction_service import ordered_unique
 
 logger = logging.getLogger(__name__)
 
