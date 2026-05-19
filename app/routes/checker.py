@@ -49,6 +49,7 @@ from app.services.prediction_service import (
     ordered_unique,
     symptoms_conditions,
 )
+from app.services.disease_kb import get_description, get_ayurvedic_remedies, get_precautions as kb_precautions
 from app.services.shap_service import get_local_shap_explanation
 
 logger = logging.getLogger(__name__)
@@ -306,7 +307,14 @@ def check_symptoms():
 
     for condition in condition_details:
         condition["possible_causes"] = condition.get("evidence", [])
-        condition["precautions"] = get_condition_precautions(condition)
+        # Enrich from Kaggle KB — description, Ayurvedic remedies, natural precautions
+        cname = condition.get("name", "")
+        kb_desc = get_description(cname)
+        if kb_desc and not condition.get("description"):
+            condition["description"] = kb_desc
+        condition["ayurvedic_remedies"] = get_ayurvedic_remedies(cname)
+        kb_prec = kb_precautions(cname)
+        condition["precautions"] = kb_prec if kb_prec else get_condition_precautions(condition)
         condition["category"] = classify_condition(condition)
 
     emergency_detected, emergency_message = detect_emergency_signals(
