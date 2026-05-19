@@ -21,6 +21,7 @@ htmlcov/
 model/model.pkl
 model/chatbot_model.pkl
 model/dataset.csv
+model/_raw_downloads/
 
 # Analysis output images — embedded in notebook already
 analysis/*.png
