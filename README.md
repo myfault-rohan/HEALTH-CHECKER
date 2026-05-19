@@ -198,7 +198,7 @@ docker run -p 10000:10000 health-checker-pro
 5. **SHAP waterfall** — single-prediction explanation with colour-coded bars
 6. **Clinical insights** — symptom co-occurrence, body-system category analysis
 
-> ⚠️ Dataset is synthetically generated for educational/portfolio purposes and does not represent real clinical data.
+> 📊 **Dataset:** Hybrid — 57k synthetically generated samples (rule-based from clinical symptom maps) enriched with the [Kaggle Disease Symptom Dataset](https://www.kaggle.com/datasets/itachi9604/disease-symptom-description-dataset) (4,920 real-world-pattern rows, 41 disease classes). Cleaned, normalised, and class-balanced to 6,300 training samples across 21 clinically validated conditions.
 
 ---
 
