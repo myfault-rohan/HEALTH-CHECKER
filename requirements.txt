@@ -9,4 +9,7 @@ scikit-learn
 pandas
 numpy
 shap
+google-genai
+python-dotenv
+prometheus-flask-exporter
 # psycopg2-binary  # uncomment when using PostgreSQL in production

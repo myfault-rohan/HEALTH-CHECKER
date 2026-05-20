@@ -4,6 +4,7 @@ import os
 from flask import Flask
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from prometheus_flask_exporter import PrometheusMetrics
 
 limiter = Limiter(key_func=get_remote_address, default_limits=[], storage_uri="memory://")
 
@@ -41,6 +42,9 @@ def create_app():
 
     init_db(app.config["DATABASE_PATH"])
     limiter.init_app(app)
+    # Prometheus metrics — exposes /metrics endpoint
+    metrics = PrometheusMetrics(app, default_labels={"app": "health-checker-pro"})
+    metrics.info("app_info", "Health Checker Pro", version="2.0.0")
     register_blueprints(app)
 
     logger = logging.getLogger(__name__)
