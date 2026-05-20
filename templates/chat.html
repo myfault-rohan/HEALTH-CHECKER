@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Medical AI Assistant | Health Checker Pro{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <section class="glass-panel p-0 d-flex flex-column" style="height: 75vh;" data-aos="fade-up">
+            
+            <!-- Chat Header -->
+            <div class="p-3 p-md-4 border-bottom d-flex align-items-center gap-3">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-robot fs-4"></i>
+                </div>
+                <div>
+                    <h1 class="h5 mb-0">Health Checker AI</h1>
+                    <small class="text-muted">Powered by clinical data and Gemini 2.5 Flash</small>
+                </div>
+            </div>
+
+            <!-- Chat History Area -->
+            <div id="chat-history" class="p-3 p-md-4 flex-grow-1 overflow-auto" style="display: flex; flex-direction: column; gap: 1rem; background: var(--bg-secondary);">
+                <!-- Initial Welcome Message -->
+                <div class="d-flex gap-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;">
+                        <i class="bi bi-robot small"></i>
+                    </div>
+                    <div class="p-3 rounded-3 shadow-sm border" style="max-width: 80%; background: var(--card-bg);">
+                        Hello! I am the Health Checker AI. You can ask me questions about symptoms, Ayurvedic remedies, or general clinical information regarding the 41 conditions in my database. How can I help you today?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator (Hidden) -->
+            <div id="typing-indicator" class="p-3 text-muted small d-none align-items-center gap-2" style="background: var(--bg-secondary);">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                AI is thinking and checking medical records...
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="p-3 p-md-4 border-top rounded-bottom" style="background: var(--surface-color);">
+                <form id="chat-form" class="position-relative">
+                    <textarea 
+                        id="ai-chat-input" 
+                        class="form-control pe-5 rounded-4 shadow-sm" 
+                        placeholder="Ask about Dengue fever, headache remedies..." 
+                        rows="2" 
+                        style="resize: none; padding-right: 90px !important; background: var(--card-bg); color: var(--text-color);"
+                        required></textarea>
+                    
+                    <!-- Voice Button -->
+                    <button type="button" id="ai-voice-button" class="btn btn-outline-secondary position-absolute rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px; right: 54px; bottom: 12px; transition: all 0.2s;">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="ai-chat-submit" class="btn btn-primary position-absolute rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px; right: 12px; bottom: 12px; transition: transform 0.2s;">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </form>
+                <div class="text-center mt-2">
+                    <small class="text-muted" style="font-size: 0.75rem;">AI can make mistakes. Please verify important information.</small>
+                </div>
+            </div>
+
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('ai-chat-input');
+    const chatHistory = document.getElementById('chat-history');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    // Handle Enter to submit (Shift+Enter for new line)
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        // Clear input
+        userInput.value = '';
+        
+        // Append user message
+        appendMessage(text, 'user');
+        
+        // Show typing indicator
+        typingIndicator.classList.remove('d-none');
+        typingIndicator.classList.add('d-flex');
+        
+        // Scroll to bottom
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        try {
+            const response = await fetch('{{ url_for("chat.ask") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query: text })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                appendMessage(data.response, 'bot');
+            } else {
+                appendMessage("Error: " + (data.error || "Failed to process request."), 'bot', true);
+            }
+        } catch (error) {
+            appendMessage("Network error. Please try again later.", 'bot', true);
+        } finally {
+            typingIndicator.classList.remove('d-flex');
+            typingIndicator.classList.add('d-none');
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+    });
+
+    function appendMessage(text, sender, isError=false) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `d-flex gap-3 ${sender === 'user' ? 'flex-row-reverse' : ''}`;
+        
+        const avatar = document.createElement('div');
+        avatar.className = `text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ${sender === 'user' ? 'bg-secondary' : 'bg-primary'}`;
+        avatar.style.width = '32px';
+        avatar.style.height = '32px';
+        avatar.innerHTML = `<i class="bi ${sender === 'user' ? 'bi-person' : 'bi-robot'} small"></i>`;
+        
+        const bubble = document.createElement('div');
+        bubble.className = `p-3 rounded-3 shadow-sm border ${sender === 'user' ? 'bg-primary text-white' : ''}`;
+        bubble.style.maxWidth = '80%';
+        if (sender !== 'user') {
+            bubble.style.background = 'var(--card-bg)';
+        }
+        
+        if (isError) {
+            bubble.classList.add('text-danger');
+        }
+
+        // Use marked to render markdown for bot responses
+        if (sender === 'bot') {
+            bubble.innerHTML = marked.parse(text);
+        } else {
+            bubble.textContent = text;
+        }
+        
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(bubble);
+        chatHistory.appendChild(wrapper);
+    }
+});
+</script>
+{% endblock %}

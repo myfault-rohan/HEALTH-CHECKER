@@ -17,6 +17,66 @@
     </div>
 </section>
 
+<section class="row g-4 mb-4" data-aos="fade-up" data-aos-delay="25">
+    <div class="col-12">
+        <div class="glass-panel p-4 position-relative overflow-hidden">
+            <!-- Pulsing background effect for the live monitor -->
+            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle at center, rgba(0,212,170,0.05) 0%, transparent 70%); z-index: 0; animation: pulse 2s infinite;"></div>
+            
+            <div class="d-flex align-items-center mb-3 position-relative z-1">
+                <div class="spinner-grow spinner-grow-sm text-danger me-2" role="status" style="width: 12px; height: 12px;"></div>
+                <h2 class="h5 mb-0 fw-bold">Live Wearable Vitals (WebSocket)</h2>
+                <span class="ms-auto badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2" id="ws-status">Connecting...</span>
+            </div>
+            
+            <div class="row g-3 position-relative z-1 text-center">
+                <!-- Heart Rate -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-4" style="background: var(--surface-color); border: 1px solid var(--border-color);">
+                        <i class="fa-solid fa-heart-pulse text-danger fs-3 mb-2"></i>
+                        <h3 class="display-5 fw-bold mb-0" id="live-bpm">--</h3>
+                        <div class="text-muted small">Heart Rate (BPM)</div>
+                    </div>
+                </div>
+                
+                <!-- Oxygen -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-4" style="background: var(--surface-color); border: 1px solid var(--border-color);">
+                        <i class="fa-solid fa-lungs text-info fs-3 mb-2"></i>
+                        <h3 class="display-5 fw-bold mb-0" id="live-spo2">--%</h3>
+                        <div class="text-muted small">Blood Oxygen (SpO2)</div>
+                    </div>
+                </div>
+
+                <!-- Temperature -->
+                <div class="col-md-4">
+                    <div class="p-3 rounded-4" style="background: var(--surface-color); border: 1px solid var(--border-color);">
+                        <i class="fa-solid fa-temperature-half text-warning fs-3 mb-2"></i>
+                        <h3 class="display-5 fw-bold mb-0" id="live-temp">--°C</h3>
+                        <div class="text-muted small">Body Temp</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+@keyframes pulse {
+    0% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.3; }
+}
+.vital-update {
+    animation: pop 0.3s ease-out;
+}
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); color: var(--accent-strong); }
+    100% { transform: scale(1); }
+}
+</style>
+
 <section class="glass-panel p-4" data-aos="fade-up" data-aos-delay="50">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -44,9 +104,14 @@
                         </td>
                         <td>{{ top.confidence if top else 0 }}%</td>
                         <td>
-                            <a href="{{ url_for('reports.export_fhir', check_id=res.id) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="fa-solid fa-file-medical me-1"></i>EHR Export
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('reports.export_fhir', check_id=res.id) }}" class="btn btn-sm btn-outline-primary" title="Export to EHR System (FHIR)">
+                                    <i class="fa-solid fa-file-medical me-1"></i>EHR
+                                </a>
+                                <a href="{{ url_for('reports.download_report', check_id=res.id) }}" class="btn btn-sm btn-outline-secondary" title="Download PDF Report">
+                                    <i class="fa-solid fa-file-pdf me-1"></i>PDF
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 {% else %}
@@ -56,4 +121,72 @@
         </table>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Determine the ML service URL
+    const mlHost = window.location.hostname;
+    const wsUrl = `ws://${mlHost}:8000/ws/vitals`;
+    
+    const statusBadge = document.getElementById('ws-status');
+    const bpmEl = document.getElementById('live-bpm');
+    const spo2El = document.getElementById('live-spo2');
+    const tempEl = document.getElementById('live-temp');
+    
+    function connectWebSocket() {
+        const ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+            statusBadge.textContent = 'LIVE / STREAMING';
+            statusBadge.className = 'ms-auto badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2';
+        };
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            // Update values and trigger pop animation
+            if(bpmEl.textContent !== data.bpm.toString()) {
+                bpmEl.textContent = data.bpm;
+                bpmEl.classList.remove('vital-update');
+                void bpmEl.offsetWidth; // trigger reflow
+                bpmEl.classList.add('vital-update');
+                
+                // Color code warnings
+                bpmEl.className = `display-5 fw-bold mb-0 vital-update ${data.bpm > 100 ? 'text-danger' : ''}`;
+            }
+            
+            if(spo2El.textContent !== data.spo2 + '%') {
+                spo2El.textContent = data.spo2 + '%';
+                spo2El.classList.remove('vital-update');
+                void spo2El.offsetWidth;
+                spo2El.classList.add('vital-update');
+                
+                spo2El.className = `display-5 fw-bold mb-0 vital-update ${data.spo2 < 95 ? 'text-danger' : ''}`;
+            }
+            
+            if(tempEl.textContent !== data.temp + '°C') {
+                tempEl.textContent = data.temp + '°C';
+                tempEl.classList.remove('vital-update');
+                void tempEl.offsetWidth;
+                tempEl.classList.add('vital-update');
+            }
+        };
+        
+        ws.onclose = () => {
+            statusBadge.textContent = 'DISCONNECTED - RECONNECTING...';
+            statusBadge.className = 'ms-auto badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-3 py-2';
+            setTimeout(connectWebSocket, 3000);
+        };
+        
+        ws.onerror = (err) => {
+            console.error('WebSocket Error:', err);
+            ws.close();
+        };
+    }
+    
+    connectWebSocket();
+});
+</script>
 {% endblock %}

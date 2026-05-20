@@ -530,7 +530,7 @@ function setupLandingPage() {
 
 function setupLoadingForms() {
     document.querySelectorAll("form").forEach((form) => {
-        if (form.id === "info-chat") return;
+        if (form.id === "info-chat" || form.id === "chat-form") return;
         form.addEventListener("submit", () => showLoadingOverlay());
     });
 }

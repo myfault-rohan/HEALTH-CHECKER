@@ -6,6 +6,7 @@ from app.routes.dashboard import dashboard_bp
 from app.routes.pages import pages_bp
 from app.routes.profile import profile_bp
 from app.routes.reports import reports_bp
+from app.routes.chat import chat_bp
 
 
 def register_blueprints(app):
@@ -16,3 +17,4 @@ def register_blueprints(app):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(chat_bp)

@@ -6,6 +6,9 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+from fastapi import FastAPI, HTTPException, WebSocket
+import asyncio
+import random
 
 try:
     import shap as shap_lib
@@ -60,6 +63,27 @@ FEATURES = [
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "chatbot_loaded": chatbot_pipeline is not None, "disease_model_loaded": disease_model is not None}
+
+@app.websocket("/ws/vitals")
+async def websocket_vitals(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        # Simulate a patient's live vitals stream
+        while True:
+            vitals = {
+                "bpm": random.randint(65, 95),
+                "spo2": random.randint(96, 100),
+                "temp": round(random.uniform(36.4, 37.2), 1)
+            }
+            # Add an occasional anomaly to make it interesting
+            if random.random() > 0.95:
+                vitals["bpm"] = random.randint(110, 130)
+                vitals["spo2"] = random.randint(90, 93)
+                
+            await websocket.send_json(vitals)
+            await asyncio.sleep(1)
+    except Exception:
+        logger.info("WebSocket connection closed")
 
 @app.post("/extract_symptoms")
 def extract_symptoms(req: TextRequest):
