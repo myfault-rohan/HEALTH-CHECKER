@@ -53,7 +53,7 @@ def predict_disease(symptoms):
 
     try:
         response = requests.post(
-            f"{ML_SERVICE_URL}/predict_disease",
+            f"{ML_SERVICE_URL}/v1/predict_disease",
             json={"symptoms": binary_vector},
             timeout=5
         )
