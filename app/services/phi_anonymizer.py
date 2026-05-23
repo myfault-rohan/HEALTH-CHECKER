@@ -17,7 +17,6 @@ The anonymized output retains full clinical value:
   - SHAP feature importances (if present)
 """
 import hashlib
-import json
 import logging
 from copy import deepcopy
 from datetime import datetime

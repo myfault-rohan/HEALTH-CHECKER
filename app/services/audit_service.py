@@ -19,16 +19,15 @@ import logging
 from datetime import datetime, timezone
 
 from flask import request
+from sqlalchemy import Column, Integer, String, Table, desc, insert, select
 
-from app.models.user_store import engine, metadata
-from sqlalchemy import Column, Integer, String, Table, insert, select, desc
+from app.models.user_store import metadata
 
 logger = logging.getLogger(__name__)
 
 # ── Audit log table definition ────────────────────────────────────────────────
 # We import metadata from user_store so the table is registered in the same
 # MetaData instance and gets created by user_store.init_db() → create_all().
-from app.models.user_store import engine as _get_engine, metadata
 
 audit_log_table = Table(
     "audit_log",

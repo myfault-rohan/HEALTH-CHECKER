@@ -39,6 +39,8 @@ from app.routes.helpers import (
     strip_icon_prefix,
 )
 from app.services.chatbot_service import extract_symptoms_from_text
+from app.services.disease_kb import get_ayurvedic_remedies, get_description
+from app.services.disease_kb import get_precautions as kb_precautions
 from app.services.prediction_service import (
     compute_condition_matches,
     detect_emergency_signals,
@@ -49,7 +51,6 @@ from app.services.prediction_service import (
     ordered_unique,
     symptoms_conditions,
 )
-from app.services.disease_kb import get_description, get_ayurvedic_remedies, get_precautions as kb_precautions
 from app.services.shap_service import get_local_shap_explanation
 
 logger = logging.getLogger(__name__)

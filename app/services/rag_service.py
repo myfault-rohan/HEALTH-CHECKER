@@ -1,10 +1,10 @@
-import os
 import logging
+import os
+
 from dotenv import load_dotenv
 from google import genai
-from google.genai import types
 
-from app.services.disease_kb import _DESCRIPTIONS, AYURVEDIC_REMEDIES, _PRECAUTIONS
+from app.services.disease_kb import _DESCRIPTIONS, _PRECAUTIONS, AYURVEDIC_REMEDIES
 
 load_dotenv()
 logger = logging.getLogger(__name__)

@@ -17,12 +17,11 @@ import json
 import logging
 from datetime import datetime
 
-from flask import Blueprint, Response, jsonify, request, session, url_for
+from flask import Blueprint, Response, request, session
 
-from app.models.user_store import get_check_result_by_id, get_user_profile, normalize_email
+from app.models.user_store import normalize_email
 from app.routes.helpers import login_required
-from app.services.audit_service import AuditAction, log_event
-from app.services.phi_anonymizer import anonymize_check_result
+from app.services.audit_service import log_event
 
 logger = logging.getLogger(__name__)
 

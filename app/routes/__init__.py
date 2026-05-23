@@ -1,13 +1,13 @@
 """HTTP route modules — registers all Flask Blueprints."""
 
 from app.routes.auth import auth_bp
+from app.routes.chat import chat_bp
 from app.routes.checker import checker_bp
 from app.routes.dashboard import dashboard_bp
+from app.routes.fhir import fhir_bp
 from app.routes.pages import pages_bp
 from app.routes.profile import profile_bp
 from app.routes.reports import reports_bp
-from app.routes.chat import chat_bp
-from app.routes.fhir import fhir_bp
 
 
 def register_blueprints(app):

@@ -5,8 +5,8 @@ Loaded from Kaggle CSVs at import time.
 Provides: description, ayurvedic_remedies, precautions per disease name.
 All remedies are Ayurvedic / natural — no drugs or chemicals.
 """
-from pathlib import Path
 import csv
+from pathlib import Path
 
 _RAW = Path(__file__).parent.parent.parent / "model" / "_raw_downloads"
 
@@ -414,7 +414,7 @@ def get_precautions(disease_name: str) -> list[str]:
     Return lifestyle precautions from Kaggle — filtered to remove
     chemical/drug references, keeping only natural advice.
     """
-    DRUG_KEYWORDS = {
+    drug_keywords = {
         "antibiotic", "medication", "medicine", "drug", "asprin", "aspirin",
         "acetaminophen", "otc", "anti itch medicine", "radioactive",
         "vaccination", "vaccine", "therapy", "oinment",
@@ -424,7 +424,7 @@ def get_precautions(disease_name: str) -> list[str]:
     filtered = []
     for tip in raw:
         low = tip.lower()
-        if not any(kw in low for kw in DRUG_KEYWORDS):
+        if not any(kw in low for kw in drug_keywords):
             filtered.append(tip.capitalize())
     return filtered
 

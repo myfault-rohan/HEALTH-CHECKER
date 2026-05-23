@@ -28,6 +28,7 @@ from reportlab.platypus import (
 )
 
 from app.models.user_store import (
+    get_all_check_results,
     get_check_result,
     get_check_result_by_id,
     get_user_profile,
@@ -39,10 +40,9 @@ from app.routes.helpers import (
     login_required,
     strip_icon_prefix,
 )
-from app.services.prediction_service import ordered_unique
 from app.services.audit_service import AuditAction, log_event
-from app.services.phi_anonymizer import anonymize_check_result, anonymize_bulk
-from app.models.user_store import get_all_check_results
+from app.services.phi_anonymizer import anonymize_bulk, anonymize_check_result
+from app.services.prediction_service import ordered_unique
 
 logger = logging.getLogger(__name__)
 
