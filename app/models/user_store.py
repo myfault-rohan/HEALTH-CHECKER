@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from sqlalchemy import (
@@ -72,7 +72,7 @@ def create_user(email, password):
                 password_hash=generate_password_hash(password),
                 age=0,
                 gender="",
-                created_at=datetime.utcnow().isoformat(timespec="seconds")
+                created_at=datetime.now(timezone.utc).isoformat(timespec="seconds")
             )
         )
 
@@ -117,7 +117,7 @@ def save_history_entry(email, payload, check_result_id=None):
         result = conn.execute(
             insert(history_table).values(
                 email=normalize_email(email),
-                created_at=datetime.utcnow().isoformat(timespec="seconds"),
+                created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 payload_json=json.dumps(payload, ensure_ascii=False),
                 check_result_id=check_result_id
             )
@@ -160,7 +160,7 @@ def save_check_result(email, result_json):
         result = conn.execute(
             insert(check_results_table).values(
                 email=normalize_email(email),
-                created_at=datetime.utcnow().isoformat(timespec="seconds"),
+                created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 result_json=json.dumps(result_json, ensure_ascii=False)
             )
         )
@@ -184,7 +184,7 @@ def get_latest_check_result(email):
         return None
     return _decode_payload(row, "result_json")
 
-def get_all_check_results(email, limit=None):
+def get_user_check_results(email, limit=None):
     with engine.connect() as conn:
         query = select(check_results_table).where(check_results_table.c.email == normalize_email(email)).order_by(desc(check_results_table.c.id))
         if limit is not None:

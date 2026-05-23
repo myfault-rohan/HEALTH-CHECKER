@@ -3,13 +3,14 @@
 > A **production-grade, enterprise AI clinical diagnostic platform** — built to demonstrate end-to-end Data Science, ML Engineering, and full-stack health-tech capabilities.
 
 [![CI Pipeline](https://github.com/myfault-rohan/HEALTH-CHECKER/actions/workflows/ci.yml/badge.svg)](https://github.com/myfault-rohan/HEALTH-CHECKER/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-HistGradientBoosting-orange?logo=scikitlearn)
 ![SHAP](https://img.shields.io/badge/XAI-SHAP-purple)
 ![Gemini](https://img.shields.io/badge/LLM-Gemini%202.5%20Flash-blue?logo=google)
 ![FastAPI](https://img.shields.io/badge/ML%20Service-FastAPI-teal?logo=fastapi)
-![Tests](https://img.shields.io/badge/Tests-111%20passed-brightgreen)
-![Coverage](https://img.shields.io/badge/Coverage-72%25-yellow)
+![Tests](https://img.shields.io/badge/Tests-115%20passed-brightgreen)
+![FHIR](https://img.shields.io/badge/Interop-FHIR%20R4-red)
+![HIPAA](https://img.shields.io/badge/Compliance-HIPAA%20Audit-green)
 
 ---
 
@@ -18,11 +19,17 @@
 Most symptom checkers are **black-box rule engines**. This is not one of them.
 
 Health Checker Pro is a **full ML + AI pipeline** — from raw Kaggle data to a deployed multi-service platform — with:
+
 - **Explainable AI** (SHAP) that shows *why* the model diagnosed what it did, symptom by symptom
-- A **Gemini-powered RAG chatbot** that answers natural-language health queries against a curated Ayurvedic/clinical knowledge base  
+- A **Gemini-powered RAG chatbot** that answers natural-language health queries against a curated Ayurvedic/clinical knowledge base
 - A **real-time WebSocket vitals dashboard** for live patient monitoring (IoT-ready)
-- A **FHIR R4 export** so predictions can be sent directly into hospital EHR systems (Epic, Cerner)
-- **111 automated tests** with a complete GitHub Actions CI/CD pipeline
+- **SMART on FHIR** interoperability — OAuth2 discovery + FHIR R4 CapabilityStatement for EHR integration
+- **HIPAA-aware audit logging** — immutable trail of every PHI access event
+- **PHI anonymization** — HIPAA Safe-Harbor method for research data exports
+- **Prometheus observability** — `/metrics` endpoint for production monitoring
+- **115 automated tests** with a complete GitHub Actions CI/CD pipeline
+
+> 📓 **Full DS analysis notebook:** [`notebooks/model_analysis.ipynb`](notebooks/model_analysis.ipynb) — EDA, 4-model benchmark, confusion matrix, SHAP global importance
 
 ---
 
@@ -36,15 +43,15 @@ Given 45 binary symptom flags (fever, cough, chest pain, etc.), predict which of
 |--------|---------|-----------|
 | Synthetic symptom-disease map (rule-based, clinically validated) | 57,000 rows | 105 initial classes |
 | [Kaggle Disease-Symptom Dataset](https://www.kaggle.com/datasets/itachi9604/disease-symptom-description-dataset) | 4,920 rows | 41 classes |
-| **After ETL, dedup & class-balancing** | **~6,300 rows** | **21 conditions** |
+| **After ETL, dedup & class-balancing** | **6,300 rows** | **21 conditions** |
 
 The data pipeline ([`model/build_rich_dataset.py`](model/build_rich_dataset.py)) handles:
-- Column aliasing (132 Kaggle symptom names → 45 canonical features)  
-- Class normalization across both sources  
-- Stratified class balancing to prevent majority-class dominance
+- Column aliasing (132 Kaggle symptom names → 45 canonical features)
+- Class normalization across both sources
+- Stratified class balancing to 300 samples per condition
 
 ### Model Selection
-We compared 4 algorithms on a stratified hold-out using 5-fold cross-validation:
+4 algorithms benchmarked via **5-fold Stratified Cross-Validation**:
 
 | Algorithm | CV Accuracy | CV F1 (weighted) | Notes |
 |-----------|-------------|-----------------|-------|
@@ -53,16 +60,16 @@ We compared 4 algorithms on a stratified hold-out using 5-fold cross-validation:
 | Random Forest | ~91% | ~0.90 | Strong but slow |
 | **HistGradientBoostingClassifier ✅** | **95.46%** | **0.9545** | **Best overall** |
 
-> ✅ Numbers verified via 5-fold cross-validation on 6,300 balanced records (300 samples × 21 conditions). Std dev ±0.0022 — highly stable.
+> ✅ Verified via 5-fold CV on 6,300 balanced records (300 × 21). Std dev ±0.0022 — highly stable.
 
 **Why HistGradientBoosting won:**
 - Native missing-value support (no imputation needed)
 - Histogram-based splits = 10× faster training than standard GBM
-- `class_weight='balanced'` handles rare disease classes cleanly
 - Gradient boosting's sequential error-correction gives superior generalization
+- Binary symptom features map perfectly to histogram bins
 
 ### Explainable AI (SHAP)
-After every prediction, the platform shows a **SHAP waterfall chart**:
+Every prediction includes a **SHAP waterfall explanation**:
 
 ```
 Why did the model predict Typhoid Fever?
@@ -74,61 +81,74 @@ Why did the model predict Typhoid Fever?
 🔴 cough            █                 -0.04  (contradicts)
 ```
 
-This is critical in health-tech because regulators and clinicians require **auditable, interpretable AI** — not black-box outputs.
-
-> 📓 Full analysis in [`analysis/model_analysis.ipynb`](analysis/model_analysis.ipynb) — EDA, confusion matrix, per-class precision/recall, SHAP global importance plots.
+Critical in health-tech because regulators and clinicians require **auditable, interpretable AI**.
 
 ---
 
-## 🤖 RAG Medical Chatbot
-
-The AI assistant is built on a **Retrieval-Augmented Generation** architecture:
+## 🤖 RAG Medical Chatbot (Gemini 2.5 Flash)
 
 ```
 User Query → Gemini 2.5 Flash + Full Clinical KB (41 conditions) → Response
 ```
 
-**Design decisions:**
-- Entire Ayurvedic/clinical knowledge base injected as context (Gemini's 1M token window)  
-- Bypasses brittle TF-IDF keyword matching — handles typos like "headace", "stumach pain" naturally  
-- System prompt explicitly forbids synthetic pharmaceutical advice — Ayurvedic/natural remedies only  
-- Voice input (Web Speech API) allows hands-free symptom querying
+- Entire Ayurvedic/clinical knowledge base injected as context (Gemini's 1M token window)
+- Handles typos naturally — "headace", "stumach pain" → correct condition
+- System prompt enforces Ayurvedic/natural remedies only (no synthetic pharmaceuticals)
+- Voice input via Web Speech API for hands-free querying
+- Every chat query is audit-logged with IP and user-agent
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Flask Web App                        │
-│                                                         │
-│  Blueprints:                        Services:           │
-│  ├── auth       (login/signup)      ├── prediction_svc  │
-│  ├── checker    (symptom flow)      ├── shap_service    │
-│  ├── chat       (AI assistant)      ├── rag_service     │
-│  ├── dashboard  (patient/doctor)    └── disease_kb      │
-│  ├── profile    (history/export)                        │
-│  └── reports    (PDF / FHIR)                            │
-└──────────────────────┬──────────────────────────────────┘
-                       │ REST
-┌──────────────────────▼──────────────────────────────────┐
-│              FastAPI ML Microservice (:8000)             │
-│  POST /predict_disease  → HistGradientBoosting           │
-│  POST /explain          → SHAP TreeExplainer values      │
-│  POST /extract_symptoms → TF-IDF NLP pipeline            │
-│  WS   /ws/vitals        → Live vitals stream (IoT)       │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      Flask Web App (:10000)                  │
+│                                                              │
+│  Blueprints:                         Services:               │
+│  ├── auth       (login/signup)       ├── prediction_svc      │
+│  ├── checker    (symptom flow)       ├── shap_service        │
+│  ├── chat       (AI assistant)       ├── rag_service         │
+│  ├── dashboard  (patient/doctor)     ├── audit_service       │
+│  ├── profile    (history/export)     ├── phi_anonymizer      │
+│  ├── reports    (PDF/FHIR/Anon)      └── disease_kb          │
+│  └── fhir       (SMART on FHIR)                              │
+│                                                              │
+│  Observability:  Prometheus /metrics                         │
+│  Compliance:     HIPAA audit_log table (immutable)           │
+└──────────────────────┬───────────────────────────────────────┘
+                       │ REST (JSON)
+┌──────────────────────▼───────────────────────────────────────┐
+│               FastAPI ML Microservice (:8000)                 │
+│  POST /v1/predict_disease  → HistGradientBoosting             │
+│  POST /v1/explain          → SHAP TreeExplainer values        │
+│  POST /v1/extract_symptoms → TF-IDF NLP pipeline              │
+│  WS   /v1/ws/vitals        → Live vitals stream (IoT)         │
+│  GET  /docs                → Interactive Swagger UI            │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### Real-Time Vitals (WebSocket)
-The Doctor Portal streams live patient telemetry via WebSocket:
+The Doctor Portal streams live patient telemetry:
 - ❤️ Heart Rate (BPM) — color-coded alert if >100
 - 🫁 Blood Oxygen SpO2 — red alert if <95%
 - 🌡️ Body Temperature — fever threshold detection
 - Auto-reconnects on disconnect — production-ready
 
-### FHIR R4 EHR Export
-Predictions export as valid **HL7 FHIR R4 Bundles** containing `Patient` and `ClinicalImpression` resources — compatible with Epic/Cerner integration workflows.
+### SMART on FHIR Interoperability
+- `GET /.well-known/smart-configuration` → OAuth2 discovery document
+- `GET /fhir/metadata` → FHIR R4 CapabilityStatement (Patient, ClinicalImpression, Bundle)
+- `GET /fhir/Patient/<id>` → Anonymized Patient resource
+- Compatible with Epic, Cerner, Meditech EHR systems
+
+### HIPAA Compliance
+- **Audit Logging** — every PHI access (login, view, export) written immutably with IP, user-agent, UTC timestamp
+- **PHI Anonymization** — HIPAA Safe-Harbor method (45 CFR §164.514(b)):
+  - Emails removed entirely
+  - Ages bucketed into 10-year bands (e.g., 34 → "30-39")
+  - Record IDs replaced with SHA-256 hashes
+  - Timestamps reduced to year only
+- **Research Export** — `/api/research/export/bulk` for anonymized dataset download
 
 ---
 
@@ -138,22 +158,19 @@ Predictions export as valid **HL7 FHIR R4 Bundles** containing `Patient` and `Cl
 tests/
 ├── unit/
 │   ├── test_prediction_service.py   # 36 tests — ML engine logic
-│   ├── test_helpers.py              # 34 tests — utility functions  
+│   ├── test_helpers.py              # 34 tests — utility functions
 │   └── test_shap_service.py         # 13 tests — XAI format/logic
 └── integration/
     └── test_routes.py               # 32 tests — full HTTP flows
 ```
 
 ```bash
-pytest tests/ --cov=app --cov-report=term-missing   # 111 tests, 72% coverage
-ruff check app/ tests/                               # Zero lint errors
+pytest tests/ -v                     # 115 tests passed
+ruff check app/ tests/               # Zero lint errors
 ```
 
-**GitHub Actions** triggers on every push to `main`:
-1. Install dependencies
-2. Run full test suite with coverage report
-3. Lint with `ruff`
-4. Docker build + container health check
+**GitHub Actions** triggers on every push:
+1. Install dependencies → 2. Run test suite → 3. Lint with `ruff` → 4. Docker build + health check
 
 ---
 
@@ -175,7 +192,7 @@ python app.py
 # → http://localhost:10000
 ```
 
-### ML Microservice (enables symptom extraction + SHAP)
+### ML Microservice (enables SHAP + symptom extraction)
 ```bash
 pip install fastapi uvicorn
 python -m uvicorn ml_service.main:app --host 0.0.0.0 --port 8000
@@ -193,22 +210,25 @@ docker compose up --build
 
 ```
 ├── app/
-│   ├── routes/           # 7 Flask Blueprints (auth, checker, chat, dashboard, profile, reports, pages)
-│   ├── services/         # prediction_service, shap_service, rag_service, disease_kb
-│   └── models/           # user_store (SQLAlchemy + SQLite/PostgreSQL)
-├── ml_service/           # FastAPI microservice with WebSocket vitals endpoint
-│   └── main.py           # predict_disease, explain, extract_symptoms, ws/vitals
+│   ├── routes/           # 8 Flask Blueprints (auth, checker, chat, dashboard,
+│   │                     #   profile, reports, pages, fhir)
+│   ├── services/         # prediction_service, shap_service, rag_service,
+│   │                     #   audit_service, phi_anonymizer, disease_kb
+│   └── models/           # user_store (SQLAlchemy — SQLite/PostgreSQL)
+├── ml_service/           # FastAPI microservice (Swagger at /docs)
+│   └── main.py           # /v1/predict, /v1/explain, /v1/ws/vitals
 ├── model/
 │   ├── build_rich_dataset.py    # ETL pipeline (Kaggle + synthetic merge)
-│   ├── train_model.py           # HistGradientBoosting training + evaluation
-│   └── dataset_rich.csv         # Merged, cleaned dataset (4,920 Kaggle + synthetic)
-├── analysis/
-│   └── model_analysis.ipynb    # Full DS notebook (EDA → Model comparison → SHAP)
-├── tests/                # 111 tests (unit + integration)
-├── .github/workflows/    # CI/CD: lint → test → Docker build
-├── static/               # Glassmorphism UI (dark/light mode, animations)
-├── templates/            # Jinja2 templates (dashboard, chat, doctor portal)
-└── docker-compose.yml    # Flask app + ML microservice orchestration
+│   ├── train_model.py           # HistGradientBoosting training script
+│   └── train_chatbot.py         # TF-IDF chatbot model (legacy)
+├── notebooks/
+│   └── model_analysis.ipynb     # Full DS notebook (EDA → CV → SHAP)
+├── tests/                       # 115 tests (unit + integration)
+├── .github/workflows/           # CI/CD: lint → test → Docker build
+├── static/                      # Glassmorphism UI (dark/light mode)
+├── templates/                   # Jinja2 (dashboard, chat, doctor portal)
+├── Dockerfile                   # Multi-stage production build
+└── docker-compose.yml           # Flask + FastAPI orchestration
 ```
 
 ---
@@ -217,36 +237,37 @@ docker compose up --build
 
 | Feature | Technology | Status |
 |---------|-----------|--------|
-| Disease Prediction | `HistGradientBoostingClassifier` · scikit-learn | ✅ |
+| Disease Prediction (21 classes) | `HistGradientBoostingClassifier` · scikit-learn | ✅ |
 | Explainable AI | SHAP `TreeExplainer` · waterfall chart UI | ✅ |
 | AI Medical Chatbot | Gemini 2.5 Flash · RAG architecture | ✅ |
 | Voice Input | Web Speech API | ✅ |
 | Live Vitals Stream | WebSocket · FastAPI async | ✅ |
-| PDF Reports | ReportLab · custom branded template | ✅ |
+| PDF Reports | ReportLab · branded template | ✅ |
 | FHIR R4 Export | HL7 FHIR R4 JSON Bundles | ✅ |
-| Automated Testing | pytest · 111 tests · 72% coverage | ✅ |
+| SMART on FHIR | OAuth2 discovery + CapabilityStatement | ✅ |
+| HIPAA Audit Logging | Immutable audit trail · IP + user-agent | ✅ |
+| PHI Anonymization | HIPAA Safe-Harbor · research exports | ✅ |
+| Prometheus Metrics | `/metrics` endpoint | ✅ |
+| Automated Testing | pytest · 115 tests | ✅ |
 | CI/CD Pipeline | GitHub Actions (lint → test → Docker) | ✅ |
 | Dark Mode UI | CSS custom properties · glassmorphism | ✅ |
 | Multi-tenant | Patient dashboard + Doctor portal | ✅ |
 | Rate Limiting | Flask-Limiter | ✅ |
+| API Versioning | `/v1/` prefix · OpenAPI Swagger docs | ✅ |
 | Containerization | Docker + Docker Compose | ✅ |
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] Flask Blueprint architecture (refactored from 1,295-line monolith)
-- [x] HistGradientBoosting ML model with SHAP Explainability
-- [x] ETL data pipeline (Kaggle + synthetic data merge)
-- [x] 111 automated tests + GitHub Actions CI/CD
+- [x] Tier 1: Flask Blueprint architecture (refactored from 1,295-line monolith)
+- [x] Tier 2: 115 automated tests + GitHub Actions CI/CD
+- [x] Tier 3: SHAP Explainable AI — per-prediction waterfall charts
+- [x] Tier 4: WebSocket real-time vitals dashboard
+- [x] Tier 5: Gemini RAG medical chatbot (Ayurvedic-first KB)
+- [x] Tier 6: API versioning (`/v1`), Swagger docs, Prometheus metrics
+- [x] Tier 7: HIPAA audit logging, PHI anonymization, SMART on FHIR
 - [x] Full DS analysis notebook (EDA, model comparison, SHAP)
-- [x] Gemini RAG medical chatbot (Ayurvedic-first KB)
-- [x] WebSocket real-time wearable vitals dashboard
-- [x] FHIR R4 EHR export + branded PDF reports
-- [x] Doctor portal with cross-patient monitoring
-- [ ] Prometheus metrics + Grafana observability
-- [ ] SMART on FHIR OAuth2 scope compliance
-- [ ] HIPAA audit logging
 
 ---
 

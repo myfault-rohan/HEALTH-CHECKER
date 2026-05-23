@@ -5,12 +5,15 @@ __pycache__/
 *.pyo
 *.pyd
 .pytest_cache/
+.ruff_cache/
 .DS_Store
 .env
 node_modules/
+
+# Database files
 health_checker.db
+data/health_checker.db
 *.db
-instance/
 
 # Coverage & testing
 .coverage
@@ -21,10 +24,14 @@ htmlcov/
 model/model.pkl
 model/chatbot_model.pkl
 model/dataset.csv
+model/dataset_rich.csv
 model/_raw_downloads/
 
 # Analysis output images — embedded in notebook already
 analysis/*.png
+
+# Logs
+*.log
 
 # Scratch / temp files
 tests/scratch_*.py
