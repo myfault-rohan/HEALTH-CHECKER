@@ -219,5 +219,55 @@ class TestProfile:
         assert response.status_code == 200
 
     def test_csv_export(self, authenticated_client):
+        # authenticated_client has a profile created on signup
         response = authenticated_client.get("/profile/export-csv", follow_redirects=True)
         assert response.status_code == 200
+
+
+@pytest.mark.integration
+class TestRBAC:
+    """Test Role-Based Access Control and clinician privacy protections."""
+
+    def test_doctor_dashboard_restricted_for_patient(self, authenticated_client):
+        # authenticated_client is test@example.com (patient)
+        response = authenticated_client.get("/doctor/dashboard", follow_redirects=True)
+        assert response.status_code == 200
+        assert b"Access denied" in response.data or b"Clinician" in response.data
+
+    def test_doctor_dashboard_allowed_for_doctor(self, client):
+        # Register a doctor account
+        client.post(
+            "/signup",
+            data={
+                "email": "doctor@clinic.com",
+                "password": "SecurePass123!",
+                "confirm_password": "SecurePass123!",
+            },
+            follow_redirects=True,
+        )
+        # Access doctor dashboard
+        response = client.get("/doctor/dashboard")
+        assert response.status_code == 200
+        assert b"Doctor Portal" in response.data
+
+    def test_bulk_export_restricted_for_patient(self, authenticated_client):
+        response = authenticated_client.get("/api/research/export/bulk", follow_redirects=True)
+        # Should redirect with warning or return 403
+        assert response.status_code in (200, 403)
+        assert b"Access denied" in response.data or b"Forbidden" in response.data
+
+    def test_bulk_export_allowed_for_doctor(self, client):
+        # Login doctor@clinic.com
+        client.post(
+            "/login",
+            data={
+                "email": "doctor@clinic.com",
+                "password": "SecurePass123!",
+            },
+            follow_redirects=True,
+        )
+        response = client.get("/api/research/export/bulk")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert "records" in data
+

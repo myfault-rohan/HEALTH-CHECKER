@@ -21,7 +21,7 @@ from app.models.user_store import (
     normalize_email,
     verify_user,
 )
-from app.routes.helpers import EMAIL_REGEX
+from app.routes.helpers import EMAIL_REGEX, is_doctor
 from app.services.audit_service import AuditAction, log_event
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,7 @@ def login():
         elif verify_user(email, password):
             session["logged_in"] = True
             session["email"] = email
+            session["is_doctor"] = is_doctor(email)
             profile = get_user_profile(email)
             if profile["age"] > 0:
                 session["patient_age"] = profile["age"]
@@ -85,6 +86,7 @@ def signup():
                 create_user(email, password)
                 session["logged_in"] = True
                 session["email"] = email
+                session["is_doctor"] = is_doctor(email)
                 log_event(email, AuditAction.SIGNUP)
                 flash("Account created successfully.", "success")
                 return redirect(url_for("dashboard.dashboard"))

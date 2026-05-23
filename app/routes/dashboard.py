@@ -16,6 +16,7 @@ from app.models.user_store import (
 from app.routes.helpers import (
     build_history_stats,
     checker_sidebar_context,
+    doctor_required,
     login_required,
 )
 
@@ -44,7 +45,7 @@ def dashboard():
 
 
 @dashboard_bp.route("/doctor/dashboard")
-@login_required
+@doctor_required
 def doctor_dashboard():
     from app.models.user_store import get_clinic_check_results
     results = get_clinic_check_results(limit=50)

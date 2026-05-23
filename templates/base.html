@@ -45,7 +45,9 @@
                 <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
                     {% if session.get('logged_in') %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link text-warning fw-bold" href="{{ url_for('dashboard.doctor_dashboard') }}"><i class="fa-solid fa-user-doctor me-1"></i>Doctor Portal</a></li>
+                        {% if session.get('is_doctor') %}
+                            <li class="nav-item"><a class="nav-link text-warning fw-bold" href="{{ url_for('dashboard.doctor_dashboard') }}"><i class="fa-solid fa-user-doctor me-1"></i>Doctor Portal</a></li>
+                        {% endif %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('checker.info') }}">New Check</a></li>
                         <li class="nav-item"><a class="nav-link text-success fw-bold" href="{{ url_for('chat.index') }}"><i class="bi bi-robot me-1"></i>AI Assistant</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('profile.profile') }}">Profile</a></li>

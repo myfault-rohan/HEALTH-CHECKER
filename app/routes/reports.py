@@ -35,8 +35,10 @@ from app.models.user_store import (
     normalize_email,
 )
 from app.routes.helpers import (
+    doctor_required,
     format_datetime_label,
     format_gender,
+    is_doctor,
     login_required,
     strip_icon_prefix,
 )
@@ -190,7 +192,10 @@ def download_report(check_id):
     email = normalize_email(session.get("email"))
     check_result = get_check_result(email, check_id) if email else None
     if not check_result:
-        flash("Report not found for this check.", "warning")
+        if is_doctor(email):
+            check_result = get_check_result_by_id(check_id)
+    if not check_result:
+        flash("Report not found or access denied.", "danger")
         return redirect(url_for("checker.conditions"))
 
     pdf_buffer = build_pdf_report(check_result)
@@ -212,9 +217,13 @@ def export_fhir(check_id):
     check_result = get_check_result(email, check_id)
     patient_email = email
     if not check_result:
-        check_result = get_check_result_by_id(check_id)
-        if check_result:
-            patient_email = check_result.get("patient_email", "unknown")
+        if is_doctor(email):
+            check_result = get_check_result_by_id(check_id)
+            if check_result:
+                patient_email = check_result.get("patient_email", "unknown")
+        else:
+            flash("Access denied. Clinician authorization required.", "danger")
+            return redirect(url_for("dashboard.dashboard"))
 
     if not check_result:
         flash("Check result not found.", "danger")
@@ -280,7 +289,10 @@ def export_anonymized(check_id):
 
     check_result = get_check_result(email, check_id)
     if not check_result:
-        check_result = get_check_result_by_id(check_id)
+        if is_doctor(email):
+            check_result = get_check_result_by_id(check_id)
+        else:
+            return Response(json.dumps({"error": "Forbidden - Clinician access required"}), status=403, mimetype="application/json")
     if not check_result:
         return Response(json.dumps({"error": "Not found"}), status=404, mimetype="application/json")
 
@@ -295,7 +307,7 @@ def export_anonymized(check_id):
 
 
 @reports_bp.route("/api/research/export/bulk")
-@login_required
+@doctor_required
 def export_bulk_anonymized():
     """
     Export ALL patient check records with PHI stripped.

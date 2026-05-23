@@ -98,6 +98,35 @@ def login_required(view_func):
     return wrapped
 
 
+def is_doctor(email):
+    if not email:
+        return False
+    email_lower = email.lower()
+    return (
+        email_lower.endswith("@clinic.com") or
+        email_lower.endswith("@hospital.com") or
+        email_lower.endswith("@healthchecker.com") or
+        email_lower.startswith("doctor.") or
+        email_lower.startswith("dr.")
+    )
+
+
+def doctor_required(view_func):
+    @wraps(view_func)
+    @login_required
+    def wrapped(*args, **kwargs):
+        email = normalize_email(session.get("email"))
+        if not is_doctor(email):
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "Forbidden - Clinician access required"}), 403
+            flash("Access denied. Doctor / Clinician portal requires authorized credentials.", "danger")
+            return redirect(url_for("dashboard.dashboard"))
+        return view_func(*args, **kwargs)
+
+    return wrapped
+
+
+
 # ---------------------------------------------------------------------------
 # Text / formatting utilities
 # ---------------------------------------------------------------------------

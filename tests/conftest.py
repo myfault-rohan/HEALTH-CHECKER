@@ -19,7 +19,8 @@ def app():
     os.environ["DATABASE_PATH"] = tmp_path
     os.environ.setdefault("FLASK_SECRET_KEY", "test-secret-key-do-not-use-in-prod")
 
-    from app import create_app
+    from app import create_app, limiter
+    limiter.enabled = False
 
     application = create_app()
     application.config.update(
