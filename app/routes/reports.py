@@ -41,6 +41,8 @@ from app.routes.helpers import (
 )
 from app.services.prediction_service import ordered_unique
 from app.services.audit_service import AuditAction, log_event
+from app.services.phi_anonymizer import anonymize_check_result, anonymize_bulk
+from app.models.user_store import get_all_check_results
 
 logger = logging.getLogger(__name__)
 
@@ -263,4 +265,50 @@ def export_fhir(check_id):
         json.dumps(fhir_bundle, indent=2),
         mimetype="application/fhir+json",
         headers={"Content-Disposition": f"attachment;filename=FHIR_Report_{check_id}.json"}
+    )
+
+
+# ---------------------------------------------------------------------------
+# PHI Anonymization endpoints (research / public data exports)
+# ---------------------------------------------------------------------------
+
+@reports_bp.route("/api/research/export/<int:check_id>")
+@login_required
+def export_anonymized(check_id):
+    """Export a single check result with all PHI stripped (HIPAA Safe-Harbor)."""
+    email = normalize_email(session.get("email"))
+
+    check_result = get_check_result(email, check_id)
+    if not check_result:
+        check_result = get_check_result_by_id(check_id)
+    if not check_result:
+        return Response(json.dumps({"error": "Not found"}), status=404, mimetype="application/json")
+
+    log_event(email, "EXPORT_ANONYMIZED", resource=f"check_result:{check_id}")
+    anon = anonymize_check_result(check_result)
+
+    return Response(
+        json.dumps(anon, indent=2),
+        mimetype="application/json",
+        headers={"Content-Disposition": f"attachment;filename=research_export_{anon.get('anon_id', check_id)}.json"}
+    )
+
+
+@reports_bp.route("/api/research/export/bulk")
+@login_required
+def export_bulk_anonymized():
+    """
+    Export ALL patient check records with PHI stripped.
+    Doctor-only endpoint — for research datasets and analytics.
+    """
+    email = normalize_email(session.get("email"))
+    log_event(email, "EXPORT_BULK_ANONYMIZED", resource="all_check_results")
+
+    all_results = get_all_check_results()
+    anonymized = anonymize_bulk(all_results)
+
+    return Response(
+        json.dumps({"count": len(anonymized), "records": anonymized}, indent=2),
+        mimetype="application/json",
+        headers={"Content-Disposition": "attachment;filename=research_dataset_anonymized.json"}
     )

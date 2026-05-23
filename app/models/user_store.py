@@ -225,4 +225,13 @@ def get_check_result_by_id(check_id):
     payload = _decode_payload(row, "result_json")
     if payload:
         payload["patient_email"] = row["email"]
+        payload["id"] = row["id"]
     return payload
+
+
+def get_all_check_results(limit: int = 500) -> list[dict]:
+    """
+    Retrieve all check results across all patients (no email filter).
+    Used for bulk research/anonymized export. Default cap: 500 records.
+    """
+    return get_clinic_check_results(limit=limit)

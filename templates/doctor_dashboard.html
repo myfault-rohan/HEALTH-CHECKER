@@ -13,6 +13,9 @@
         <div class="d-flex flex-wrap gap-2 text-end">
             <span class="badge bg-danger p-2 fs-6">High Urgency: {{ high_urgency }}</span>
             <span class="badge bg-primary p-2 fs-6 ms-2">Total Scans: {{ total_checks }}</span>
+            <a href="{{ url_for('reports.export_bulk_anonymized') }}" class="btn btn-sm btn-outline-success ms-2" title="Download full anonymized research dataset">
+                <i class="fa-solid fa-flask me-1"></i>Bulk Research Export
+            </a>
         </div>
     </div>
 </section>
@@ -110,6 +113,9 @@
                                 </a>
                                 <a href="{{ url_for('reports.download_report', check_id=res.id) }}" class="btn btn-sm btn-outline-secondary" title="Download PDF Report">
                                     <i class="fa-solid fa-file-pdf me-1"></i>PDF
+                                </a>
+                                <a href="{{ url_for('reports.export_anonymized', check_id=res.id) }}" class="btn btn-sm btn-outline-success" title="Download anonymized research JSON (PHI stripped)">
+                                    <i class="fa-solid fa-flask me-1"></i>Anon
                                 </a>
                             </div>
                         </td>
