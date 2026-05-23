@@ -22,6 +22,7 @@ from app.models.user_store import (
     verify_user,
 )
 from app.routes.helpers import EMAIL_REGEX
+from app.services.audit_service import AuditAction, log_event
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +51,12 @@ def login():
                 session["patient_age"] = profile["age"]
             if profile["gender"]:
                 session["patient_gender"] = profile["gender"]
+            log_event(email, AuditAction.LOGIN)
             flash("Welcome back. Login successful.", "success")
             return redirect(url_for("dashboard.dashboard"))
         else:
             time.sleep(0.4)
+            log_event(email, "LOGIN_FAILED")
             flash("Invalid email or password.", "danger")
 
     return render_template("login.html", show_steps=False, show_sidebar=False)
@@ -82,6 +85,7 @@ def signup():
                 create_user(email, password)
                 session["logged_in"] = True
                 session["email"] = email
+                log_event(email, AuditAction.SIGNUP)
                 flash("Account created successfully.", "success")
                 return redirect(url_for("dashboard.dashboard"))
             except IntegrityError:
@@ -92,6 +96,8 @@ def signup():
 
 @auth_bp.route("/logout")
 def logout():
+    email = session.get("email", "unknown")
+    log_event(email, AuditAction.LOGOUT)
     session.clear()
     flash("You have been logged out.", "info")
     return redirect(url_for("auth.login"))

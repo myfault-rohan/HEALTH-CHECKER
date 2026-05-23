@@ -40,6 +40,7 @@ from app.routes.helpers import (
     strip_icon_prefix,
 )
 from app.services.prediction_service import ordered_unique
+from app.services.audit_service import AuditAction, log_event
 
 logger = logging.getLogger(__name__)
 
@@ -191,6 +192,7 @@ def download_report(check_id):
         return redirect(url_for("checker.conditions"))
 
     pdf_buffer = build_pdf_report(check_result)
+    log_event(email, AuditAction.EXPORT_PDF, resource=f"check_result:{check_id}")
     filename = f"health-check-report-{check_id}.pdf"
     return Response(
         pdf_buffer.getvalue(),
@@ -216,6 +218,7 @@ def export_fhir(check_id):
         flash("Check result not found.", "danger")
         return redirect(url_for("dashboard.dashboard"))
 
+    log_event(email, AuditAction.EXPORT_FHIR, resource=f"check_result:{check_id}")
     patient = get_user_profile(patient_email)
 
     fhir_bundle = {

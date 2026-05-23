@@ -31,6 +31,7 @@ def create_app():
 
     from app.models.user_store import init_db
     from app.routes import register_blueprints
+    import app.services.audit_service  # noqa: F401 — registers audit_log table in metadata
 
     app = Flask(
         __name__,
