@@ -7,6 +7,7 @@ from app.routes.pages import pages_bp
 from app.routes.profile import profile_bp
 from app.routes.reports import reports_bp
 from app.routes.chat import chat_bp
+from app.routes.fhir import fhir_bp
 
 
 def register_blueprints(app):
@@ -18,3 +19,4 @@ def register_blueprints(app):
     app.register_blueprint(profile_bp)
     app.register_blueprint(reports_bp)
     app.register_blueprint(chat_bp)
+    app.register_blueprint(fhir_bp)
