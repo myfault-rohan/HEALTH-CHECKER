@@ -3,6 +3,7 @@
 > A **production-grade, enterprise AI clinical diagnostic platform** — built to demonstrate end-to-end Data Science, ML Engineering, and full-stack health-tech capabilities.
 
 [![CI Pipeline](https://github.com/myfault-rohan/HEALTH-CHECKER/actions/workflows/ci.yml/badge.svg)](https://github.com/myfault-rohan/HEALTH-CHECKER/actions/workflows/ci.yml)
+[![Live Demo](https://img.shields.io/badge/Render-Live%20Demo-E007B5?logo=render&logoColor=white)](https://health-checker-4sxc.onrender.com)
 ![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-HistGradientBoosting-orange?logo=scikitlearn)
 ![SHAP](https://img.shields.io/badge/XAI-SHAP-purple)
@@ -11,6 +12,8 @@
 ![Tests](https://img.shields.io/badge/Tests-115%20passed-brightgreen)
 ![FHIR](https://img.shields.io/badge/Interop-FHIR%20R4-red)
 ![HIPAA](https://img.shields.io/badge/Compliance-HIPAA%20Audit-green)
+
+🚀 **Live Demo:** [health-checker-4sxc.onrender.com](https://health-checker-4sxc.onrender.com)
 
 ---
 
