@@ -59,21 +59,7 @@ jobs:
         env:
           FLASK_SECRET_KEY: ci-test-secret-key
           RATELIMIT_ENABLED: "False"
-        run: |
-          pytest tests/ \
-            --cov=app \
-            --cov=predictor \
-            --cov-report=term-missing \
-            --cov-report=xml \
-            -m "not slow" \
-            -v > pytest_output.log 2>&1 || {
-              echo "=== pytest failed, uploading log to file.io ==="
-              cat pytest_output.log
-              RESPONSE=$(curl -s -F "file=@pytest_output.log" https://file.io)
-              LINK=$(echo $RESPONSE | jq -r '.link')
-              echo "::error::Pytest failed. Download full log here: $LINK"
-              exit 1
-            }
+        run: python run_tests_ci.py
 
       - name: Upload coverage report
         if: always()
