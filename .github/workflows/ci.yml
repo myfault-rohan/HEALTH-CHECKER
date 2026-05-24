@@ -67,14 +67,11 @@ jobs:
             --cov-report=xml \
             -m "not slow" \
             -v > pytest_output.log 2>&1 || {
-              echo "=== pytest failed, committing logs ==="
+              echo "=== pytest failed, uploading log to file.io ==="
               cat pytest_output.log
-              git config --global user.name "GitHub Actions"
-              git config --global user.email "actions@github.com"
-              git checkout -b ci-debug
-              git add pytest_output.log
-              git commit -m "chore: pytest failure logs [skip ci]"
-              git push origin ci-debug -f
+              RESPONSE=$(curl -s -F "file=@pytest_output.log" https://file.io)
+              LINK=$(echo $RESPONSE | jq -r '.link')
+              echo "::error::Pytest failed. Download full log here: $LINK"
               exit 1
             }
 
