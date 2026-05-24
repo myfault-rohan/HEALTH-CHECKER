@@ -64,14 +64,16 @@ jobs:
             --cov-report=term-missing \
             --cov-report=xml \
             -m "not slow" \
-            -v
+            -v > pytest_output.log 2>&1 || (cat pytest_output.log && exit 1)
 
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage.xml
+          path: |
+            coverage.xml
+            pytest_output.log
 
   docker:
     name: Docker Build

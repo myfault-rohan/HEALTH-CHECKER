@@ -257,6 +257,16 @@ class TestRBAC:
         assert b"Access denied" in response.data or b"Forbidden" in response.data
 
     def test_bulk_export_allowed_for_doctor(self, client):
+        # Register doctor@clinic.com first to ensure test independence
+        client.post(
+            "/signup",
+            data={
+                "email": "doctor@clinic.com",
+                "password": "SecurePass123!",
+                "confirm_password": "SecurePass123!",
+            },
+            follow_redirects=True,
+        )
         # Login doctor@clinic.com
         client.post(
             "/login",
