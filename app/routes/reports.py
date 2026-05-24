@@ -3,7 +3,7 @@
 import io
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from xml.sax.saxutils import escape as xml_escape
 
 from flask import (
@@ -235,14 +235,14 @@ def export_fhir(check_id):
     fhir_bundle = {
         "resourceType": "Bundle",
         "type": "document",
-        "timestamp": check_result.get("checked_at", datetime.utcnow().isoformat()),
+        "timestamp": check_result.get("checked_at", datetime.now(timezone.utc).isoformat()),
         "entry": [
             {
                 "resource": {
                     "resourceType": "Patient",
                     "id": f"PAT-{patient_email.split('@')[0]}",
                     "gender": patient.get("gender", "unknown"),
-                    "birthDate": str(datetime.utcnow().year - int(patient.get("age", 0))) if patient.get("age") else "unknown"
+                    "birthDate": str(datetime.now(timezone.utc).year - int(patient.get("age", 0))) if patient.get("age") else "unknown"
                 }
             },
             {

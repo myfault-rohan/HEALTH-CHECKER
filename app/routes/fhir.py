@@ -15,7 +15,7 @@ Reference: https://hl7.org/fhir/smart-app-launch/
 """
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import Blueprint, Response, request, session
 
@@ -116,7 +116,7 @@ def capability_statement():
         "title": "Health Checker Pro — FHIR R4 Capability Statement",
         "status": "active",
         "experimental": False,
-        "date": datetime.utcnow().strftime("%Y-%m-%d"),
+        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "publisher": "Health Checker Pro",
         "description": (
             "AI-powered symptom analysis platform with HistGradientBoosting ML, "
@@ -219,7 +219,7 @@ def get_fhir_patient(patient_id):
         "id": patient_id,
         "meta": {
             "versionId": "1",
-            "lastUpdated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "lastUpdated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "profile": ["http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"],
         },
         "text": {

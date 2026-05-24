@@ -19,7 +19,7 @@ The anonymized output retains full clinical value:
 import hashlib
 import logging
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ def anonymize_check_result(check_result: dict) -> dict:
     # Add anonymization metadata
     result["_anonymized"] = True
     result["_method"] = "HIPAA Safe-Harbor (45 CFR §164.514(b))"
-    result["_anonymized_at"] = datetime.utcnow().strftime("%Y")
+    result["_anonymized_at"] = datetime.now(timezone.utc).strftime("%Y")
 
     return result
 
