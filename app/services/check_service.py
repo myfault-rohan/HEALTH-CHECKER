@@ -118,6 +118,7 @@ def merge_ml_prediction(condition_details, predicted_disease):
 def enrich_conditions(condition_details):
     """Enrich conditions with database description, ayurvedic remedies, and precautions."""
     from app.routes.helpers import classify_condition
+    from app.services.prediction_service import CONDITION_DESCRIPTIONS
     enriched = []
     for cond in condition_details:
         condition = dict(cond)
@@ -126,6 +127,8 @@ def enrich_conditions(condition_details):
         kb_desc = get_description(cname)
         if kb_desc and not condition.get("description"):
             condition["description"] = kb_desc
+        elif not condition.get("description"):
+            condition["description"] = CONDITION_DESCRIPTIONS.get(cname, "Pattern inferred from your selected symptoms.")
         condition["ayurvedic_remedies"] = get_ayurvedic_remedies(cname)
         kb_prec = kb_precautions(cname)
         condition["precautions"] = kb_prec if kb_prec else get_condition_precautions(condition)
