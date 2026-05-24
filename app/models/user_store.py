@@ -215,7 +215,14 @@ def get_clinic_check_results(limit=50):
     return parsed_results
 
 def get_check_result_by_id(check_id):
-    """Retrieve a check result by ID without email filtering (for doctor portal)."""
+    """
+    Retrieve a check result by ID without email filtering (for doctor portal).
+
+    WARNING: This function does not perform authorization or email matching.
+    Access control MUST be enforced at the route level (e.g., ensuring the
+    current session user is a doctor).
+    """
+    # Security Note: Route-level RBAC is required as this is an administrative bypass.
     with engine.connect() as conn:
         row = conn.execute(
             select(check_results_table).where(check_results_table.c.id == check_id)

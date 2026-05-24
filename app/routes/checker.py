@@ -28,7 +28,6 @@ from app.routes.helpers import (
     VALID_GENDERS,
     build_symptom_result_items,
     checker_sidebar_context,
-    classify_condition,
     clean_text,
     clear_checker_session,
     get_condition_from_result,
@@ -36,11 +35,15 @@ from app.routes.helpers import (
     get_profile_from_session,
     has_profile,
     login_required,
-    strip_icon_prefix,
 )
 from app.services.chatbot_service import extract_symptoms_from_text
-from app.services.disease_kb import get_ayurvedic_remedies, get_description
-from app.services.disease_kb import get_precautions as kb_precautions
+from app.services.check_service import (
+    assess_quality,
+    build_check_result,
+    build_remedies,
+    enrich_conditions,
+    merge_ml_prediction,
+)
 from app.services.prediction_service import (
     compute_condition_matches,
     detect_emergency_signals,
@@ -49,7 +52,6 @@ from app.services.prediction_service import (
     get_symptom_categories,
     normalize_symptom_name,
     ordered_unique,
-    symptoms_conditions,
 )
 from app.services.shap_service import get_local_shap_explanation
 
@@ -200,140 +202,25 @@ def check_symptoms():
     }
     cough_type = (form_data.get("cough_type") or "").lower()
 
-    remedies_pool = []
-    for symptom in selected_symptoms:
-        symptom_data = symptoms_conditions.get(symptom)
-        if symptom_data:
-            remedies_pool.extend(symptom_data.get("remedies", []))
-    remedies = ordered_unique(remedies_pool)[:24]
-
-    lifestyle_suggestions = []
-    if remedies:
-        herbals = [item for item in remedies if item.startswith("🌿")]
-        dietary = [
-            item
-            for item in remedies
-            if item.startswith(("🥕", "🍎", "🍌", "🍚", "🥬"))
-        ]
-        lifestyle = [
-            item for item in remedies if item.startswith(("🧘", "😴", "🛌", "👁️"))
-        ]
-        liquids = [
-            item
-            for item in remedies
-            if item.startswith(("💧", "🫐", "🥛", "🍵", "🍋"))
-        ]
-        other = [
-            item
-            for item in remedies
-            if item not in herbals + dietary + lifestyle + liquids
-        ]
-
-        remedy_sections = []
-        if herbals:
-            cleaned_herbs = [strip_icon_prefix(item) for item in herbals]
-            if len(cleaned_herbs) > 1:
-                remedy_sections.append(
-                    f"🌿 **Ayurvedic Herbal Remedies**: {', '.join(cleaned_herbs[:-1])} and {cleaned_herbs[-1]}."
-                )
-            else:
-                remedy_sections.append(
-                    f"🌿 **Ayurvedic Herbal Remedies**: {cleaned_herbs[0]}."
-                )
-
-        if dietary:
-            foods_text = ", ".join(strip_icon_prefix(item) for item in dietary)
-            remedy_sections.append(
-                f"🍎 **Dietary Recommendations**: Incorporate {foods_text} into your meals."
-            )
-
-        if lifestyle:
-            lifestyle_text = ", ".join(
-                strip_icon_prefix(item) for item in lifestyle
-            )
-            remedy_sections.append(f"🧘 **Lifestyle & Rest**: {lifestyle_text}.")
-
-        if liquids:
-            liquids_text = ", ".join(strip_icon_prefix(item) for item in liquids)
-            remedy_sections.append(f"💧 **Hydration**: {liquids_text}.")
-
-        if other:
-            remedy_sections.extend(other)
-
-        remedies = [" ".join(remedy_sections)] if remedy_sections else remedies
-        lifestyle_suggestions = ordered_unique(
-            strip_icon_prefix(item) for item in lifestyle + liquids + dietary
-        )[:8]
+    remedies, lifestyle_suggestions = build_remedies(selected_symptoms)
 
     condition_details = compute_condition_matches(
         selected_symptoms, age, gender, form_data
     )
     predicted_disease = predict_disease(selected_symptoms)
+    ml_degraded = predicted_disease in {"Prediction Error", "No clear match (Model not loaded)"}
 
     # --- Explainable AI: compute SHAP feature importance ---
     shap_data = get_local_shap_explanation(selected_symptoms)
 
-    if predicted_disease and predicted_disease not in {
-        "No clear match",
-        "Prediction Error",
-        "No clear match (Model not loaded)",
-    }:
-        existing = next(
-            (
-                condition
-                for condition in condition_details
-                if condition["name"].lower() == predicted_disease.lower()
-            ),
-            None,
-        )
-        if not existing:
-            ml_condition = {
-                "name": predicted_disease,
-                "confidence": 95,
-                "match_label": "Machine Learning Match",
-                "urgency": "medium",
-                "severity": "medium",
-                "evidence": ["statistical pattern matching"],
-                "description": (
-                    "This condition was predicted by our HistGradientBoosting "
-                    "ML model trained on symptom-condition correlation patterns."
-                ),
-            }
-            condition_details.insert(0, ml_condition)
-        else:
-            condition_details.remove(existing)
-            existing["match_label"] = "Verified by Machine Learning"
-            existing["confidence"] = min(99, existing["confidence"] + 20)
-            condition_details.insert(0, existing)
-
-    for condition in condition_details:
-        condition["possible_causes"] = condition.get("evidence", [])
-        # Enrich from Kaggle KB — description, Ayurvedic remedies, natural precautions
-        cname = condition.get("name", "")
-        kb_desc = get_description(cname)
-        if kb_desc and not condition.get("description"):
-            condition["description"] = kb_desc
-        condition["ayurvedic_remedies"] = get_ayurvedic_remedies(cname)
-        kb_prec = kb_precautions(cname)
-        condition["precautions"] = kb_prec if kb_prec else get_condition_precautions(condition)
-        condition["category"] = classify_condition(condition)
+    condition_details = merge_ml_prediction(condition_details, predicted_disease)
+    condition_details = enrich_conditions(condition_details)
 
     emergency_detected, emergency_message = detect_emergency_signals(
         selected_symptoms, form_data
     )
 
-    quality = "good"
-    suggestion = "Results confidence improves when you add specific symptom details."
-    if len(selected_symptoms) <= 1:
-        quality = "limited"
-        suggestion = "Add at least 2-3 symptoms for better accuracy."
-    elif len(selected_symptoms) >= 5:
-        quality = "high"
-        suggestion = (
-            "Good symptom coverage. Review the top matches and urgent flags carefully."
-        )
-    if "cough" in selected_symptoms and cough_type in {"dry", "wet"}:
-        suggestion = f"{suggestion} Cough type noted as {cough_type}."
+    quality, suggestion = assess_quality(selected_symptoms, cough_type)
 
     checked_at = datetime.now().strftime("%Y-%m-%d %H:%M")
     top_condition = condition_details[0] if condition_details else {}
@@ -342,23 +229,21 @@ def check_symptoms():
         for condition in condition_details
         if condition.get("urgency") in {"medium", "high"}
     )
-    check_result = {
-        "checked_at": checked_at,
-        "selected_symptoms": selected_symptoms,
-        "predicted_disease": predicted_disease,
-        "condition_details": condition_details,
-        "remedies": remedies,
-        "emergency_detected": emergency_detected,
-        "emergency_message": emergency_message,
-        "analysis": {
-            "symptom_count": len(selected_symptoms),
-            "quality": quality,
-            "suggestion": suggestion,
-        },
-        "lifestyle_suggestions": lifestyle_suggestions,
-        "patient": {"age": age, "gender": gender},
-        "shap_data": shap_data,
-    }
+    check_result = build_check_result(
+        checked_at=checked_at,
+        selected_symptoms=selected_symptoms,
+        predicted_disease=predicted_disease,
+        condition_details=condition_details,
+        remedies=remedies,
+        emergency_detected=emergency_detected,
+        emergency_message=emergency_message,
+        quality=quality,
+        suggestion=suggestion,
+        lifestyle_suggestions=lifestyle_suggestions,
+        age=age,
+        gender=gender,
+        shap_data=shap_data,
+    )
 
     email = normalize_email(session.get("email"))
     check_id = None
@@ -400,6 +285,8 @@ def check_symptoms():
     if condition_details:
         session["active_condition"] = condition_details[0]["name"]
 
+    if ml_degraded:
+        flash("ML prediction service was unavailable. Results are based on the rule engine only.", "warning")
     flash("Prediction completed. Review your condition matches.", "success")
     return redirect(url_for("checker.conditions"))
 

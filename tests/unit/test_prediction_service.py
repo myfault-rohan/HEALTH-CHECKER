@@ -1,6 +1,5 @@
 """Unit tests for the prediction service — the core diagnostic engine."""
-
-
+import pytest
 from app.services.prediction_service import (
     compute_condition_matches,
     confidence_label,
@@ -232,3 +231,44 @@ class TestGetConditionPrecautions:
     def test_missing_urgency_defaults_to_low(self):
         precautions = get_condition_precautions({})
         assert len(precautions) > 0
+
+
+class TestComputeConditionMatchesCombinations:
+    """Parametrized tests for combination rules, demographic adjustments, and edge cases."""
+
+    @pytest.mark.parametrize(
+        "symptoms,age,gender,expected_condition,min_confidence",
+        [
+            (["chest pain", "shortness of breath"], 45, "male", "Potential Cardiac Concern", 40),
+            (["fever", "cough", "congestion"], 30, "male", "Flu", 30),
+            (["vomiting", "diarrhea"], 25, "female", "Digestive Infection", 30),
+            (["headache", "dizziness", "blurred vision"], 35, "female", "Migraine", 30),
+        ]
+    )
+    def test_combination_rules(self, symptoms, age, gender, expected_condition, min_confidence):
+        result = compute_condition_matches(symptoms, age, gender, {})
+        match = next((c for c in result if expected_condition.lower() in c["name"].lower()), None)
+        assert match is not None, f"Expected condition '{expected_condition}' not found for symptoms {symptoms}"
+        assert match["confidence"] >= min_confidence, f"Confidence {match['confidence']} below expected {min_confidence}"
+
+    def test_demographic_adjustment_age_50_joint_pain(self):
+        """Older patients with joint pain should see arthritis boosted or maintained high."""
+        young_result = compute_condition_matches(["joint pain"], 20, "male", {})
+        old_result = compute_condition_matches(["joint pain"], 60, "male", {})
+
+        young_arth = next((c for c in young_result if "arthritis" in c["name"].lower()), None)
+        old_arth = next((c for c in old_result if "arthritis" in c["name"].lower()), None)
+
+        if young_arth and old_arth:
+            assert old_arth["confidence"] >= young_arth["confidence"]
+
+    def test_edge_case_single_symptom(self):
+        """Single symptom should still return valid condition matches."""
+        result = compute_condition_matches(["fever"], 30, "male", {})
+        assert len(result) > 0
+
+    def test_edge_case_all_45_symptoms(self):
+        """Running with all searchable symptoms shouldn't crash and should respect result cap."""
+        all_symptoms = get_searchable_symptoms()
+        result = compute_condition_matches(all_symptoms, 40, "female", {})
+        assert len(result) <= 8
