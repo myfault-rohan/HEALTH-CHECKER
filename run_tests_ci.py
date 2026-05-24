@@ -36,7 +36,7 @@ def main():
             subprocess.run(["git", "config", "--global", "user.name", "GitHub Actions"])
             subprocess.run(["git", "config", "--global", "user.email", "actions@github.com"])
             subprocess.run(["git", "checkout", "-b", "ci-debug"])
-            subprocess.run(["git", "add", "pytest_output.log"])
+            subprocess.run(["git", "add", "-f", "pytest_output.log"])
             subprocess.run(["git", "commit", "-m", "chore: pytest failure logs [skip ci]"])
             subprocess.run(["git", "push", "origin", "ci-debug", "-f"])
             print("Successfully pushed logs to ci-debug branch!")
