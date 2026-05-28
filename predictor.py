@@ -24,10 +24,14 @@ FEATURE_SYMPTOMS = [
     "watery_eyes", "nightfall", "menstrual_pain", "dehydration", "cold", "stress"
 ]
 
+VALID_SYMPTOMS = {s.replace("_", " ") for s in FEATURE_SYMPTOMS}
+
+
 def _normalize_symptom_name(value):
     return str(value or "").strip().lower().replace("_", " ")
 
-def predict_disease(symptoms):
+
+def predict_disease(symptoms: list[str]) -> str:
     """
     Predict a disease using the FastAPI Machine Learning Microservice.
     """
@@ -43,23 +47,36 @@ def predict_disease(symptoms):
         if _normalize_symptom_name(value)
     }
 
+    # Filter against canonical symptom set
+    unknown = selected - VALID_SYMPTOMS
+    if unknown:
+        logger.warning("Unrecognised symptom(s) ignored: %s", unknown)
+    selected = selected & VALID_SYMPTOMS
+    if not selected:
+        return "No clear match"
+
     # Convert to binary vector
-    binary_vector = []
-    for symptom in FEATURE_SYMPTOMS:
-        if symptom.replace("_", " ") in selected:
-            binary_vector.append(1)
-        else:
-            binary_vector.append(0)
+    binary_vector = [
+        1 if symptom.replace("_", " ") in selected else 0
+        for symptom in FEATURE_SYMPTOMS
+    ]
 
     try:
         response = requests.post(
             f"{ML_SERVICE_URL}/v1/predict_disease",
             json={"symptoms": binary_vector},
-            timeout=5
+            timeout=5,
         )
         if response.status_code == 200:
             return response.json().get("disease", "Prediction Error")
         logger.warning("ML Service returned status %s", response.status_code)
+    except requests.Timeout:
+        logger.error("ML Service timed out after 5s")
+        return "Service Timeout"
+    except requests.ConnectionError:
+        logger.error("ML Service is unreachable at %s", ML_SERVICE_URL)
+        return "Service Unavailable"
     except Exception:
-        logger.exception("ML Service prediction request failed")
+        logger.exception("Unexpected error calling ML Service")
+        return "Prediction Error"
     return "Prediction Error"

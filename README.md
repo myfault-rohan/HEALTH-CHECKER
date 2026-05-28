@@ -195,6 +195,9 @@ python app.py
 # → http://localhost:10000
 ```
 
+> ⚠️ **Live demo note:** Hosted on Render's free tier — may take 30–60
+> seconds to wake up on first visit. If you see a timeout, just refresh once.
+
 ### ML Microservice (enables SHAP + symptom extraction)
 ```bash
 pip install fastapi uvicorn
@@ -206,6 +209,10 @@ python -m uvicorn ml_service.main:app --host 0.0.0.0 --port 8000
 ```bash
 docker compose up --build
 ```
+
+> ⚠️ **Production database:** The default SQLite store is ephemeral on
+> platforms like Render. Set the `DATABASE_URL` environment variable to a
+> PostgreSQL connection string before deploying to production.
 
 ---
 

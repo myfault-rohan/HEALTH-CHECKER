@@ -12,8 +12,10 @@ services:
       - DATABASE_URL=postgresql://health_user:securepassword@db:5432/health_db
       - ML_SERVICE_URL=http://ml:8000
     depends_on:
-      - db
-      - ml
+      db:
+        condition: service_started
+      ml:
+        condition: service_healthy
     restart: unless-stopped
 
   ml:
@@ -24,6 +26,11 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   db:
     image: postgres:15-alpine

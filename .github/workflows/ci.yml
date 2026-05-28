@@ -52,6 +52,9 @@ jobs:
           print("Stub model.pkl created")
           EOF
 
+      - name: Security audit
+        run: pip-audit --requirement requirements.txt
+
       - name: Lint with Ruff
         run: ruff check app/ tests/ predictor.py --output-format=github
 
