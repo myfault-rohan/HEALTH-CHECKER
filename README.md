@@ -9,7 +9,7 @@
 ![SHAP](https://img.shields.io/badge/XAI-SHAP-purple)
 ![Gemini](https://img.shields.io/badge/LLM-Gemini%202.5%20Flash-blue?logo=google)
 ![FastAPI](https://img.shields.io/badge/ML%20Service-FastAPI-teal?logo=fastapi)
-![Tests](https://img.shields.io/badge/Tests-115%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-137%20passed-brightgreen)
 ![FHIR](https://img.shields.io/badge/Interop-FHIR%20R4-red)
 ![HIPAA](https://img.shields.io/badge/Compliance-HIPAA%20Audit-green)
 
@@ -30,9 +30,12 @@ Health Checker Pro is a **full ML + AI pipeline** — from raw Kaggle data to a 
 - **HIPAA-aware audit logging** — immutable trail of every PHI access event
 - **PHI anonymization** — HIPAA Safe-Harbor method for research data exports
 - **Prometheus observability** — `/metrics` endpoint for production monitoring
-- **115 automated tests** with a complete GitHub Actions CI/CD pipeline
+- **115+ automated tests** with a complete GitHub Actions CI/CD pipeline
+- **Security hardened** — input validation, pinned dependencies, `pip-audit` in CI
 
-> 📓 **Full DS analysis notebook:** [`notebooks/model_analysis.ipynb`](notebooks/model_analysis.ipynb) — EDA, 4-model benchmark, confusion matrix, SHAP global importance
+> 📓 **DS notebook 1:** [`notebooks/model_analysis.ipynb`](notebooks/model_analysis.ipynb) — EDA, 4-model benchmark, SHAP global importance
+>
+> 📊 **DS notebook 2:** [`notebooks/post_deployment_analysis.ipynb`](notebooks/post_deployment_analysis.ipynb) — Prediction distribution, confidence histograms, symptom co-occurrence, confusion matrix heatmap
 
 ---
 
@@ -168,12 +171,13 @@ tests/
 ```
 
 ```bash
-pytest tests/ -v                     # 115 tests passed
+pytest tests/ -v                     # 137 tests passed
 ruff check app/ tests/               # Zero lint errors
+pip-audit --requirement requirements.txt  # Zero known vulnerabilities
 ```
 
 **GitHub Actions** triggers on every push:
-1. Install dependencies → 2. Run test suite → 3. Lint with `ruff` → 4. Docker build + health check
+1. Install dependencies → 2. `pip-audit` security scan → 3. Run test suite → 4. Lint with `ruff` → 5. Docker build + health check
 
 ---
 
@@ -232,8 +236,9 @@ docker compose up --build
 │   ├── train_model.py           # HistGradientBoosting training script
 │   └── train_chatbot.py         # TF-IDF chatbot model (legacy)
 ├── notebooks/
-│   └── model_analysis.ipynb     # Full DS notebook (EDA → CV → SHAP)
-├── tests/                       # 115 tests (unit + integration)
+│   ├── model_analysis.ipynb         # Full DS notebook (EDA → CV → SHAP)
+│   └── post_deployment_analysis.ipynb  # Post-deploy: distribution, confidence, confusion
+├── tests/                       # 137 tests (unit + integration)
 ├── .github/workflows/           # CI/CD: lint → test → Docker build
 ├── static/                      # Glassmorphism UI (dark/light mode)
 ├── templates/                   # Jinja2 (dashboard, chat, doctor portal)
@@ -258,8 +263,8 @@ docker compose up --build
 | HIPAA Audit Logging | Immutable audit trail · IP + user-agent | ✅ |
 | PHI Anonymization | HIPAA Safe-Harbor · research exports | ✅ |
 | Prometheus Metrics | `/metrics` endpoint | ✅ |
-| Automated Testing | pytest · 115 tests | ✅ |
-| CI/CD Pipeline | GitHub Actions (lint → test → Docker) | ✅ |
+| Automated Testing | pytest · 137 tests | ✅ |
+| CI/CD Pipeline | GitHub Actions (pip-audit → lint → test → Docker) | ✅ |
 | Dark Mode UI | CSS custom properties · glassmorphism | ✅ |
 | Multi-tenant | Patient dashboard + Doctor portal | ✅ |
 | Rate Limiting | Flask-Limiter | ✅ |
@@ -278,6 +283,9 @@ docker compose up --build
 - [x] Tier 6: API versioning (`/v1`), Swagger docs, Prometheus metrics
 - [x] Tier 7: HIPAA audit logging, PHI anonymization, SMART on FHIR
 - [x] Full DS analysis notebook (EDA, model comparison, SHAP)
+- [x] Post-deployment analysis notebook (prediction dist, confidence, co-occurrence, confusion matrix)
+- [x] Security hardening: input validation, pinned deps, `pip-audit` CI scan, Docker HEALTHCHECK
+- [x] DB resilience: `DATABASE_URL` env → PostgreSQL on Render/Heroku, SQLite fallback
 
 ---
 

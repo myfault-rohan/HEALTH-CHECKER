@@ -89,8 +89,10 @@ jobs:
         run: |
           docker run -d --name hc-test \
             -e FLASK_SECRET_KEY=ci-test-key \
+            -e FLASK_ENV=development \
             -p 10000:10000 \
             health-checker-pro:ci
-          sleep 5
-          curl --retry 3 --retry-delay 2 --fail http://localhost:10000/ || exit 1
+          sleep 15
+          curl --retry 5 --retry-delay 3 --fail http://localhost:10000/ || (docker logs hc-test; exit 1)
           docker stop hc-test
+

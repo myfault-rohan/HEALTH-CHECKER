@@ -1,5 +1,5 @@
 # Use an official lightweight Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Set environment variables
 # PYTHONDONTWRITEBYTECODE: Prevents Python from writing pyc files to disc
