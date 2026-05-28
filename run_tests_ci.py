@@ -1,8 +1,5 @@
 import subprocess
 import sys
-import urllib.request
-import urllib.parse
-import json
 
 def main():
     print("=== Running pytest via Python CI Runner ===")
@@ -43,40 +40,11 @@ def main():
         except Exception as ge:
             print(f"Failed to push git logs: {ge}")
 
-        # Upload to file.io as a backup
-        try:
-            print("Uploading log to file.io...")
-            boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
-            data = []
-            data.append(f"--{boundary}".encode('utf-8'))
-            data.append(f'Content-Disposition: form-data; name="file"; filename="{log_file}"'.encode('utf-8'))
-            data.append(b'Content-Type: text/plain')
-            data.append(b'')
-            data.append(result.stdout.encode('utf-8'))
-            data.append(f"--{boundary}--".encode('utf-8'))
-            data.append(b'')
-            body = b'\r\n'.join(data)
-            
-            req = urllib.request.Request(
-                "https://file.io",
-                data=body,
-                headers={
-                    "Content-Type": f"multipart/form-data; boundary={boundary}",
-                    "User-Agent": "Mozilla/5.0"
-                }
-            )
-            with urllib.request.urlopen(req) as resp:
-                resp_data = json.loads(resp.read().decode())
-                link = resp_data.get("link", "Upload failed")
-                print(f"Uploaded log link: {link}")
-                print(f"::error::Pytest failed (code {result.returncode}). Download log: {link}")
-        except Exception as e:
-            print(f"Failed to upload log to file.io: {e}")
-            # If upload fails, print last 150 lines
-            print("=== Last 150 lines of pytest output ===")
-            lines = result.stdout.splitlines()
-            for line in lines[-150:]:
-                print(line)
+        # Print last 150 lines of pytest output to stdout so it's guaranteed visible in the console
+        print("=== Last 150 lines of pytest output ===")
+        lines = result.stdout.splitlines()
+        for line in lines[-150:]:
+            print(line)
                 
         sys.exit(result.returncode)
     else:
