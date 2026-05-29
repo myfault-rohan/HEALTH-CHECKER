@@ -32,7 +32,7 @@ copy .env.example .env         # Windows
 pytest tests/ -v
 ```
 
-All 115 tests should pass. The SHAP tests require a trained `model/model.pkl` — if it's missing locally, generate a stub:
+All 137 tests should pass. The SHAP tests require a trained `model/model.pkl` — if it's missing locally, generate a stub:
 
 ```bash
 python - <<'EOF'

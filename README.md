@@ -30,7 +30,7 @@ Health Checker Pro is a **full ML + AI pipeline** — from raw Kaggle data to a 
 - **HIPAA-aware audit logging** — immutable trail of every PHI access event
 - **PHI anonymization** — HIPAA Safe-Harbor method for research data exports
 - **Prometheus observability** — `/metrics` endpoint for production monitoring
-- **115+ automated tests** with a complete GitHub Actions CI/CD pipeline
+- **137 automated tests** with a complete GitHub Actions CI/CD pipeline
 - **Security hardened** — input validation, pinned dependencies, `pip-audit` in CI
 
 > 📓 **DS notebook 1:** [`notebooks/model_analysis.ipynb`](notebooks/model_analysis.ipynb) — EDA, 4-model benchmark, SHAP global importance
@@ -276,7 +276,7 @@ docker compose up --build
 ## 🗺️ Roadmap
 
 - [x] Tier 1: Flask Blueprint architecture (refactored from 1,295-line monolith)
-- [x] Tier 2: 115 automated tests + GitHub Actions CI/CD
+- [x] Tier 2: 137 automated tests + GitHub Actions CI/CD
 - [x] Tier 3: SHAP Explainable AI — per-prediction waterfall charts
 - [x] Tier 4: WebSocket real-time vitals dashboard
 - [x] Tier 5: Gemini RAG medical chatbot (Ayurvedic-first KB)
