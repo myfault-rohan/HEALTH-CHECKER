@@ -33,9 +33,9 @@ Health Checker Pro is a **full ML + AI pipeline** — from raw Kaggle data to a 
 - **137 automated tests** with a complete GitHub Actions CI/CD pipeline
 - **Security hardened** — input validation, pinned dependencies, `pip-audit` in CI
 
-> 📓 **DS notebook 1:** [`notebooks/model_analysis.ipynb`](notebooks/model_analysis.ipynb) — EDA, 4-model benchmark, SHAP global importance
+> 📓 **DS notebook 1:** [`notebooks/model_analysis.ipynb`](https://nbviewer.org/github/myfault-rohan/HEALTH-CHECKER/blob/master/notebooks/model_analysis.ipynb) — EDA, 4-model benchmark, SHAP global importance
 >
-> 📊 **DS notebook 2:** [`notebooks/post_deployment_analysis.ipynb`](notebooks/post_deployment_analysis.ipynb) — Prediction distribution, confidence histograms, symptom co-occurrence, confusion matrix heatmap
+> 📊 **DS notebook 2:** [`notebooks/post_deployment_analysis.ipynb`](https://nbviewer.org/github/myfault-rohan/HEALTH-CHECKER/blob/master/notebooks/post_deployment_analysis.ipynb) — Prediction distribution, confidence histograms, symptom co-occurrence, confusion matrix heatmap
 
 ---
 
