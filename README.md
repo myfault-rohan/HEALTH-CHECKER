@@ -9,7 +9,7 @@
 ![SHAP](https://img.shields.io/badge/XAI-SHAP-purple)
 ![Gemini](https://img.shields.io/badge/LLM-Gemini%202.5%20Flash-blue?logo=google)
 ![FastAPI](https://img.shields.io/badge/ML%20Service-FastAPI-teal?logo=fastapi)
-![Tests](https://img.shields.io/badge/Tests-137%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-134%20passed-brightgreen)
 ![FHIR](https://img.shields.io/badge/Interop-FHIR%20R4-red)
 ![HIPAA](https://img.shields.io/badge/Compliance-HIPAA%20Audit-green)
 

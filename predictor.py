@@ -74,7 +74,7 @@ def predict_disease(symptoms: list[str]) -> str:
         logger.error("ML Service timed out after 5s")
         return "Service Timeout"
     except requests.ConnectionError:
-        logger.error("ML Service is unreachable at %s", ML_SERVICE_URL)
+        logger.error("ML Service unreachable at %s", ML_SERVICE_URL)
         return "Service Unavailable"
     except Exception:
         logger.exception("Unexpected error calling ML Service")
