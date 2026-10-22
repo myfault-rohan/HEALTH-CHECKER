@@ -170,11 +170,17 @@ function refreshSymptomResults() {
 function syncSelectedSymptomInputs() {
     const hiddenContainer = document.getElementById("selected-symptom-inputs");
     const selectedContainer = document.getElementById("selected-symptoms");
+    const stickyContainer = document.getElementById("sticky-pills-list");
+    const stickyBar = document.getElementById("sticky-selection-bar");
     const countDisplay = document.getElementById("symptom-count");
+    const stickyCountNum = document.getElementById("sticky-count-num");
+    const bottomCount = document.getElementById("bottom-symptom-count");
+
     if (!hiddenContainer) return;
 
     const values = getSelectedSymptoms();
 
+    // 1. Update bottom selected pills
     if (selectedContainer) {
         selectedContainer.innerHTML = "";
         values.forEach((value) => {
@@ -185,22 +191,67 @@ function syncSelectedSymptomInputs() {
             chip.setAttribute("aria-label", `Remove ${value}`);
             chip.addEventListener("click", () => {
                 updateSelectedSymptom(value, false);
-                refreshSymptomResults();
             });
             selectedContainer.appendChild(chip);
         });
         if (!values.length) {
             const emptyState = document.createElement("p");
-            emptyState.className = "text-muted mb-0";
-            emptyState.textContent = "No symptoms selected yet.";
+            emptyState.className = "text-muted small mb-0";
+            emptyState.textContent = "No symptoms selected yet. Tap any card or common symptom above.";
             selectedContainer.appendChild(emptyState);
         }
     }
 
+    // 2. Update sticky bar pills
+    if (stickyContainer) {
+        stickyContainer.innerHTML = "";
+        values.forEach((value) => {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "symptom-pill removable-pill py-1 px-2 small";
+            chip.innerHTML = `<span>${value}</span><span class="pill-remove" aria-hidden="true">&times;</span>`;
+            chip.setAttribute("aria-label", `Remove ${value}`);
+            chip.addEventListener("click", () => {
+                updateSelectedSymptom(value, false);
+            });
+            stickyContainer.appendChild(chip);
+        });
+    }
+
+    // 3. Toggle sticky bar visibility
+    if (stickyBar) {
+        stickyBar.classList.toggle("d-none", values.length === 0);
+    }
+
+    // 4. Update count indicators
     if (countDisplay) {
         countDisplay.textContent = values.length;
     }
+    if (stickyCountNum) {
+        stickyCountNum.textContent = values.length;
+    }
+    if (bottomCount) {
+        bottomCount.textContent = `${values.length} item${values.length === 1 ? '' : 's'}`;
+    }
 
+    // 5. Sync popular symptom chips
+    document.querySelectorAll(".quick-symptom-chip").forEach((chip) => {
+        const sym = chip.dataset.symptom;
+        const isSel = values.includes(sym);
+        chip.classList.toggle("is-selected", isSel);
+        chip.setAttribute("aria-pressed", isSel ? "true" : "false");
+        const icon = chip.querySelector(".quick-chip-status i");
+        if (icon) {
+            icon.className = isSel ? "fa-solid fa-check" : "fa-solid fa-plus";
+        }
+    });
+
+    // 6. Sync symptom result buttons on page
+    document.querySelectorAll(".symptom-result-button").forEach((button) => {
+        updateSymptomResultButton(button);
+    });
+
+    // 7. Sync conditional clinical details fields
     document.querySelectorAll(".detail-field").forEach((field) => {
         const requires = (field.dataset.requires || "")
             .split(",")
@@ -217,6 +268,7 @@ function updateSelectedSymptom(name, checked) {
     const existing = Array.from(
         hiddenContainer.querySelectorAll('input[name="symptoms"]')
     ).find((input) => input.value === name);
+
     if (checked && !existing) {
         const input = document.createElement("input");
         input.type = "hidden";
@@ -229,11 +281,28 @@ function updateSelectedSymptom(name, checked) {
     syncSelectedSymptomInputs();
 }
 
+function clearAllSymptoms() {
+    const hiddenContainer = document.getElementById("selected-symptom-inputs");
+    if (hiddenContainer) {
+        hiddenContainer.innerHTML = "";
+    }
+    syncSelectedSymptomInputs();
+    refreshSymptomResults();
+}
+
 function updateSymptomResultButton(button) {
     const selected = getSelectedSymptoms().includes(button.dataset.symptom);
     button.dataset.selected = selected ? "true" : "false";
     button.setAttribute("aria-pressed", selected ? "true" : "false");
     button.classList.toggle("is-selected", selected);
+    const pill = button.querySelector(".symptom-action-pill");
+    if (pill) {
+        pill.classList.toggle("is-added", selected);
+        const icon = pill.querySelector("i");
+        if (icon) {
+            icon.className = selected ? "fa-solid fa-check me-1 check-icon" : "fa-solid fa-plus me-1 plus-icon";
+        }
+    }
     const state = button.querySelector(".symptom-result-state");
     if (state) {
         state.textContent = selected ? "Added" : "Add";
@@ -250,6 +319,10 @@ function bindSymptomCards(scope = document) {
         });
     });
 }
+
+window.syncSelectedSymptomInputs = syncSelectedSymptomInputs;
+window.updateSelectedSymptom = updateSelectedSymptom;
+window.clearAllSymptoms = clearAllSymptoms;
 
 function setupVoiceInput() {
     const searchInput = document.getElementById("symptom-search");
@@ -358,6 +431,135 @@ function setupSymptomsPage() {
     setupVoiceInput();
     setupAIChatVoiceInput();
 
+    const searchInput = document.getElementById("symptom-search");
+    const searchClearBtn = document.getElementById("search-clear-btn");
+    const categoryInput = document.getElementById("symptom-category");
+    const zoneInput = document.getElementById("symptom-zone");
+    const clearAllBtn = document.getElementById("clear-all-btn");
+
+    // Clear all selected symptoms
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener("click", clearAllSymptoms);
+    }
+
+    // Quick Add Popular Symptoms
+    document.querySelectorAll(".quick-symptom-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+            const sym = chip.dataset.symptom;
+            const isSel = getSelectedSymptoms().includes(sym);
+            updateSelectedSymptom(sym, !isSel);
+        });
+    });
+
+    // Search Input handling: clear button & instant client-side filtering
+    if (searchInput) {
+        const toggleClearBtn = () => {
+            if (searchClearBtn) {
+                searchClearBtn.classList.toggle("d-none", !searchInput.value.trim());
+            }
+        };
+
+        searchInput.addEventListener("input", () => {
+            toggleClearBtn();
+
+            // Client-side instant filter for zero-latency response
+            const q = searchInput.value.trim().toLowerCase();
+            const cols = document.querySelectorAll("#symptom-grid .symptom-col");
+            if (cols.length > 0) {
+                let matchCount = 0;
+                cols.forEach((col) => {
+                    const val = (col.dataset.symptomValue || "").toLowerCase();
+                    const text = col.textContent.toLowerCase();
+                    const isMatch = !q || val.includes(q) || text.includes(q);
+                    col.classList.toggle("d-none", !isMatch);
+                    if (isMatch) matchCount++;
+                });
+                const countBadge = document.getElementById("results-count");
+                if (countBadge) countBadge.textContent = matchCount;
+            }
+        });
+
+        // Quick add on Enter key
+        searchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const visibleButtons = Array.from(
+                    document.querySelectorAll("#symptom-grid .symptom-col:not(.d-none) .symptom-result-button")
+                );
+                if (visibleButtons.length > 0) {
+                    // Pick the first unselected, or fallback to first
+                    const targetBtn = visibleButtons.find((btn) => btn.dataset.selected !== "true") || visibleButtons[0];
+                    targetBtn.click();
+                    searchInput.value = "";
+                    toggleClearBtn();
+                    refreshSymptomResults();
+                }
+            }
+        });
+
+        if (searchClearBtn) {
+            searchClearBtn.addEventListener("click", () => {
+                searchInput.value = "";
+                toggleClearBtn();
+                searchInput.focus();
+                refreshSymptomResults();
+            });
+        }
+    }
+
+    // Category Tabs Bar
+    document.querySelectorAll(".category-tab-chip").forEach((tab) => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".category-tab-chip").forEach((t) => {
+                t.classList.remove("active");
+                t.setAttribute("aria-selected", "false");
+            });
+            tab.classList.add("active");
+            tab.setAttribute("aria-selected", "true");
+
+            const selectedCat = tab.dataset.category || "all";
+            if (categoryInput) categoryInput.value = selectedCat;
+            if (zoneInput) zoneInput.value = "";
+
+            // Reset active body map indicator if category is chosen
+            const map = document.getElementById("body-map");
+            if (map) {
+                map.querySelectorAll(".body-zone").forEach((z) => z.classList.remove("is-active"));
+            }
+            const activeLabel = document.getElementById("active-zone-label");
+            if (activeLabel) {
+                activeLabel.textContent = `Active: ${tab.querySelector(".tab-label")?.textContent || selectedCat}`;
+            }
+            const resetBodymapBtn = document.getElementById("reset-bodymap-btn");
+            if (resetBodymapBtn) {
+                resetBodymapBtn.classList.toggle("d-none", selectedCat === "all");
+            }
+
+            refreshSymptomResults();
+        });
+    });
+
+    // Reset filters delegation (e.g. from empty state)
+    document.addEventListener("click", (e) => {
+        const resetBtn = e.target.closest(".reset-filter-btn");
+        if (resetBtn) {
+            if (searchInput) {
+                searchInput.value = "";
+                if (searchClearBtn) searchClearBtn.classList.add("d-none");
+            }
+            if (categoryInput) categoryInput.value = "all";
+            if (zoneInput) zoneInput.value = "";
+            document.querySelectorAll(".category-tab-chip").forEach((t) => {
+                t.classList.toggle("active", t.dataset.category === "all");
+            });
+            if (window.resetBodyMap) {
+                window.resetBodyMap();
+            }
+            refreshSymptomResults();
+        }
+    });
+
+    // HTMX afterSwap re-binding
     document.body.addEventListener("htmx:afterSwap", (event) => {
         if (event.target.id === "symptom-results") {
             bindSymptomCards(event.target);

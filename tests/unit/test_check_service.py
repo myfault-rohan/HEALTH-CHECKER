@@ -34,7 +34,7 @@ class TestMergeMLPrediction:
         res = merge_ml_prediction(conditions, "Migraine")
         assert len(res) == 2
         assert res[0]["name"] == "Migraine"
-        assert res[0]["confidence"] == 95
+        assert res[0]["confidence"] == 72  # ML-only gets moderate 72%
         assert res[0]["match_label"] == "Machine Learning Match"
 
     def test_boosts_existing_prediction(self):
@@ -42,7 +42,7 @@ class TestMergeMLPrediction:
         res = merge_ml_prediction(conditions, "Migraine")
         assert len(res) == 1
         assert res[0]["name"] == "Migraine"
-        assert res[0]["confidence"] == 70  # 50 + 20
+        assert res[0]["confidence"] == 65  # 50 + 15 (boost reduced from 20 to 15)
         assert res[0]["match_label"] == "Verified by Machine Learning"
 
 

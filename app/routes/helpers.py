@@ -15,9 +15,12 @@ from app.models.user_store import (
     normalize_email,
 )
 from app.services.prediction_service import (
+    SYMPTOM_ALIASES,
     get_searchable_symptoms,
+    get_symptom_categories,
     normalize_symptom_name,
     ordered_unique,
+    symptoms_conditions,
 )
 
 logger = logging.getLogger(__name__)
@@ -56,8 +59,85 @@ BODY_ZONE_TARGETS = {
     "abdomen": "category-digestive",
     "arms": "category-musculoskeletal",
     "legs": "category-musculoskeletal",
-    "full-body": "category-neurological",
+    "full-body": "category-general",
 }
+
+SYMPTOM_META = {
+    # Respiratory
+    "cough": {"cat": "respiratory", "icon": "fa-head-side-cough", "emoji": "🗣️"},
+    "cold": {"cat": "respiratory", "icon": "fa-snowflake", "emoji": "🤧"},
+    "shortness of breath": {"cat": "respiratory", "icon": "fa-lungs", "emoji": "🫁"},
+    "chest pain": {"cat": "respiratory", "icon": "fa-heart-pulse", "emoji": "💔"},
+    "wheezing": {"cat": "respiratory", "icon": "fa-wind", "emoji": "😮‍💨"},
+    "sore throat": {"cat": "respiratory", "icon": "fa-head-side-virus", "emoji": "🧣"},
+    "runny nose": {"cat": "respiratory", "icon": "fa-box-tissue", "emoji": "👃"},
+    "sneezing": {"cat": "respiratory", "icon": "fa-face-rolling-eyes", "emoji": "🤧"},
+    "congestion": {"cat": "respiratory", "icon": "fa-head-side", "emoji": "😮‍💨"},
+    # Digestive
+    "abdominal pain": {"cat": "digestive", "icon": "fa-circle-dot", "emoji": "🫄"},
+    "stomach pain": {"cat": "digestive", "icon": "fa-circle-dot", "emoji": "😣"},
+    "nausea": {"cat": "digestive", "icon": "fa-face-frown", "emoji": "🤢"},
+    "vomiting": {"cat": "digestive", "icon": "fa-toilet", "emoji": "🤮"},
+    "diarrhea": {"cat": "digestive", "icon": "fa-water", "emoji": "💧"},
+    "constipation": {"cat": "digestive", "icon": "fa-stop", "emoji": "🧱"},
+    "bloating": {"cat": "digestive", "icon": "fa-circle-half-stroke", "emoji": "🎈"},
+    "heartburn": {"cat": "digestive", "icon": "fa-fire", "emoji": "🔥"},
+    "acidity": {"cat": "digestive", "icon": "fa-lemon", "emoji": "🍋"},
+    "loss of appetite": {"cat": "digestive", "icon": "fa-utensils", "emoji": "🍽️"},
+    "urinary problems": {"cat": "digestive", "icon": "fa-droplet", "emoji": "🚽"},
+    # Neurological
+    "headache": {"cat": "neurological", "icon": "fa-brain", "emoji": "🤕"},
+    "dizziness": {"cat": "neurological", "icon": "fa-compass", "emoji": "🌀"},
+    "blurred vision": {"cat": "neurological", "icon": "fa-eye-low-vision", "emoji": "👁️"},
+    "confusion": {"cat": "neurological", "icon": "fa-question", "emoji": "❓"},
+    "insomnia": {"cat": "neurological", "icon": "fa-moon", "emoji": "🌙"},
+    "fatigue": {"cat": "neurological", "icon": "fa-bolt", "emoji": "⚡"},
+    "chills": {"cat": "neurological", "icon": "fa-icicles", "emoji": "🥶"},
+    "stress": {"cat": "neurological", "icon": "fa-burst", "emoji": "🤯"},
+    "palpitations": {"cat": "neurological", "icon": "fa-heartbeat", "emoji": "💓"},
+    # Musculoskeletal
+    "joint pain": {"cat": "musculoskeletal", "icon": "fa-bone", "emoji": "🦴"},
+    "back pain": {"cat": "musculoskeletal", "icon": "fa-person", "emoji": "🧍"},
+    "muscle pain": {"cat": "musculoskeletal", "icon": "fa-dumbbell", "emoji": "💪"},
+    "stiffness": {"cat": "musculoskeletal", "icon": "fa-lock", "emoji": "🔒"},
+    "leg pain": {"cat": "musculoskeletal", "icon": "fa-shoe-prints", "emoji": "🦵"},
+    "waist pain": {"cat": "musculoskeletal", "icon": "fa-arrows-left-right", "emoji": "🚶"},
+    "body weakness": {"cat": "musculoskeletal", "icon": "fa-battery-quarter", "emoji": "🪫"},
+    "swelling": {"cat": "musculoskeletal", "icon": "fa-expand", "emoji": "💧"},
+    # General
+    "fever": {"cat": "general", "icon": "fa-temperature-high", "emoji": "🌡️"},
+    "dehydration": {"cat": "general", "icon": "fa-glass-water", "emoji": "🥤"},
+    "menstrual pain": {"cat": "general", "icon": "fa-calendar-day", "emoji": "🩸"},
+    "night sweats": {"cat": "general", "icon": "fa-bed", "emoji": "💦"},
+    "nightfall": {"cat": "general", "icon": "fa-cloud-moon", "emoji": "🌌"},
+    "rash": {"cat": "general", "icon": "fa-hand-dots", "emoji": "🔴"},
+    "watery eyes": {"cat": "general", "icon": "fa-eye", "emoji": "🥺"},
+    "weight loss": {"cat": "general", "icon": "fa-weight-scale", "emoji": "⚖️"},
+}
+
+POPULAR_SYMPTOMS = [
+    {"name": "fever", "label": "Fever", "icon": "fa-temperature-high", "emoji": "🌡️"},
+    {"name": "cough", "label": "Cough", "icon": "fa-head-side-cough", "emoji": "🗣️"},
+    {"name": "headache", "label": "Headache", "icon": "fa-brain", "emoji": "🤕"},
+    {"name": "sore throat", "label": "Sore Throat", "icon": "fa-head-side-virus", "emoji": "🧣"},
+    {"name": "shortness of breath", "label": "Shortness of Breath", "icon": "fa-lungs", "emoji": "🫁"},
+    {"name": "fatigue", "label": "Fatigue", "icon": "fa-bolt", "emoji": "⚡"},
+    {"name": "chest pain", "label": "Chest Pain", "icon": "fa-heart-pulse", "emoji": "💔"},
+    {"name": "nausea", "label": "Nausea", "icon": "fa-face-frown", "emoji": "🤢"},
+    {"name": "joint pain", "label": "Joint Pain", "icon": "fa-bone", "emoji": "🦴"},
+    {"name": "cold", "label": "Cold", "icon": "fa-snowflake", "emoji": "🤧"},
+    {"name": "stomach pain", "label": "Stomach Pain", "icon": "fa-circle-dot", "emoji": "🫄"},
+    {"name": "dizziness", "label": "Dizziness", "icon": "fa-compass", "emoji": "🌀"},
+]
+
+CATEGORY_TABS = [
+    {"id": "all", "label": "All", "icon": "fa-border-all", "emoji": "🌐", "count": 45},
+    {"id": "neurological", "label": "Head & Mind", "icon": "fa-brain", "emoji": "🧠", "count": 9},
+    {"id": "respiratory", "label": "Lungs & Chest", "icon": "fa-lungs", "emoji": "🫁", "count": 9},
+    {"id": "digestive", "label": "Stomach & Digestion", "icon": "fa-virus", "emoji": "🫄", "count": 11},
+    {"id": "musculoskeletal", "label": "Joints & Muscles", "icon": "fa-bone", "emoji": "🦴", "count": 8},
+    {"id": "general", "label": "General", "icon": "fa-heart-pulse", "emoji": "🩹", "count": 8},
+]
 
 CATEGORY_KEYWORDS = {
     "Respiratory": [
@@ -251,16 +331,23 @@ def highlight_match(value, query):
     return Markup(highlighted)
 
 
-def build_symptom_result_items(query="", zone="", selected_symptoms=None):
+def build_symptom_result_items(query="", zone="", category="", selected_symptoms=None):
     query = clean_text(query, max_length=50).lower()
     zone = clean_text(zone, max_length=20).lower()
+    category = clean_text(category, max_length=30).lower()
     selected_set = {normalize_symptom_name(item) for item in (selected_symptoms or [])}
-    searchable = sorted(get_searchable_symptoms())
+    canonical_list = sorted(symptoms_conditions.keys())
 
-    if zone and zone in SYMPTOM_ZONE_MAP:
-        pool = [item for item in searchable if item in SYMPTOM_ZONE_MAP[zone]]
+    # Category / Zone filtering
+    if category and category != "all":
+        cat_map = get_symptom_categories()
+        allowed = set(cat_map.get(category, []))
+        pool = [item for item in canonical_list if item in allowed]
+    elif zone and zone in SYMPTOM_ZONE_MAP:
+        allowed = set(SYMPTOM_ZONE_MAP[zone])
+        pool = [item for item in canonical_list if item in allowed]
     else:
-        pool = searchable
+        pool = canonical_list
 
     query_tokens = [token for token in re.split(r"\s+", query) if token]
 
@@ -273,8 +360,19 @@ def build_symptom_result_items(query="", zone="", selected_symptoms=None):
             prefix_matches = sum(
                 1 for token in query_tokens if any(word.startswith(token) for word in words)
             )
-            if token_matches == 0:
+
+            # Check if query or tokens match an alias for this symptom
+            alias_match = False
+            for alias_key, canonical_target in SYMPTOM_ALIASES.items():
+                if canonical_target == symptom and (
+                    query in alias_key or any(tok in alias_key for tok in query_tokens)
+                ):
+                    alias_match = True
+                    break
+
+            if token_matches == 0 and not alias_match:
                 continue
+
             score = token_matches * 10 + prefix_matches * 6
             if text.startswith(query):
                 score += 20
@@ -282,18 +380,26 @@ def build_symptom_result_items(query="", zone="", selected_symptoms=None):
                 score += 8
             if len(query_tokens) > 1 and token_matches == len(query_tokens):
                 score += 12
+            if alias_match:
+                score += 15
+
             scored_pool.append((score, len(text), symptom))
 
-        pool = [symptom for _, _, symptom in sorted(scored_pool, key=lambda item: (-item[0], item[1], item[2]))[:12]]
-    else:
-        pool = pool[:12]
+        pool = [symptom for _, _, symptom in sorted(scored_pool, key=lambda item: (-item[0], item[1], item[2]))]
 
     items = []
     for symptom in pool:
+        meta = SYMPTOM_META.get(
+            symptom, {"cat": "general", "icon": "fa-circle-dot", "emoji": "🩺"}
+        )
         items.append(
             {
                 "id": f"symptom-choice-{symptom.replace(' ', '-')}",
                 "value": symptom,
+                "name": symptom.title(),
+                "category": meta["cat"],
+                "icon": meta["icon"],
+                "emoji": meta["emoji"],
                 "checked": symptom in selected_set,
                 "highlighted_name": highlight_match(symptom.title(), query),
             }

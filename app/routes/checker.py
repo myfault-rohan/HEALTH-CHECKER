@@ -23,6 +23,8 @@ from app.models.user_store import (
 )
 from app.routes.helpers import (
     BODY_ZONE_TARGETS,
+    CATEGORY_TABS,
+    POPULAR_SYMPTOMS,
     SYMPTOM_RESULTS_TEMPLATE,
     SYMPTOM_ZONE_MAP,
     VALID_GENDERS,
@@ -126,6 +128,8 @@ def symptoms():
         ),
         symptom_zone_map=SYMPTOM_ZONE_MAP,
         body_zone_targets=BODY_ZONE_TARGETS,
+        popular_symptoms=POPULAR_SYMPTOMS,
+        category_tabs=CATEGORY_TABS,
     )
 
 
@@ -134,16 +138,21 @@ def symptoms():
 def search_symptoms():
     query = request.args.get("q", "")
     zone = request.args.get("zone", "")
+    category = request.args.get("category", "")
     selected = request.args.getlist("symptoms")
     items = build_symptom_result_items(
         query=query,
         zone=zone,
+        category=category,
         selected_symptoms=selected,
     )
     return render_template(
         SYMPTOM_RESULTS_TEMPLATE,
         symptom_results=items,
-        empty_message="No symptoms found. Try a broader search.",
+        query=query,
+        category=category,
+        zone=zone,
+        empty_message="No symptoms found. Try typing a different keyword or choose another category.",
     )
 
 

@@ -84,6 +84,8 @@ def merge_ml_prediction(condition_details, predicted_disease):
         "No clear match",
         "Prediction Error",
         "No clear match (Model not loaded)",
+        "Service Timeout",
+        "Service Unavailable",
     }:
         existing = next(
             (
@@ -94,9 +96,10 @@ def merge_ml_prediction(condition_details, predicted_disease):
             None,
         )
         if not existing:
+            # ML found something the rule engine didn't -- add with moderate confidence
             ml_condition = {
                 "name": predicted_disease,
-                "confidence": 95,
+                "confidence": 72,
                 "match_label": "Machine Learning Match",
                 "urgency": "medium",
                 "severity": "medium",
@@ -108,9 +111,10 @@ def merge_ml_prediction(condition_details, predicted_disease):
             }
             condition_details.insert(0, ml_condition)
         else:
+            # ML agrees with rule engine -- boost confidence by 15 (max 95)
             condition_details.remove(existing)
             existing["match_label"] = "Verified by Machine Learning"
-            existing["confidence"] = min(99, existing["confidence"] + 20)
+            existing["confidence"] = min(95, existing["confidence"] + 15)
             condition_details.insert(0, existing)
     return condition_details
 

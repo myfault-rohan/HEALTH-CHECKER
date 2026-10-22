@@ -1,24 +1,53 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="text-muted small">
+        <i class="fa-solid fa-list-check me-1 text-primary"></i>
+        <span>Showing <strong id="results-count">{{ symptom_results|length }}</strong> symptom{% if symptom_results|length != 1 %}s{% endif %}</span>
+        {% if query %}
+            <span> matching "<strong>{{ query }}</strong>"</span>
+        {% endif %}
+    </div>
+    {% if query or (category and category != 'all') or zone %}
+        <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 text-primary reset-filter-btn" id="reset-results-btn">
+            <i class="fa-solid fa-rotate-left me-1"></i>Reset Filters
+        </button>
+    {% endif %}
+</div>
+
 {% if symptom_results %}
-    <div class="row g-3">
+    <div class="row g-2 g-md-3" id="symptom-grid">
         {% for symptom in symptom_results %}
-            <div class="col-sm-6 col-lg-4">
+            <div class="col-sm-6 col-lg-4 symptom-col" data-symptom-value="{{ symptom.value }}" data-symptom-category="{{ symptom.category }}">
                 <button
                     type="button"
                     class="symptom-result-button symptom-card {% if symptom.checked %}is-selected{% endif %}"
                     data-symptom="{{ symptom.value }}"
                     data-selected="{{ 'true' if symptom.checked else 'false' }}"
                     aria-pressed="{{ 'true' if symptom.checked else 'false' }}"
+                    id="{{ symptom.id }}"
                 >
-                    <div class="d-flex justify-content-between align-items-center gap-3">
-                        <span class="fw-semibold text-start">{{ symptom.highlighted_name|safe }}</span>
-                        <span class="soft-badge symptom-result-state">{% if symptom.checked %}Added{% else %}Add{% endif %}</span>
+                    <div class="d-flex align-items-center justify-content-between w-100 gap-2">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden text-start">
+                            <span class="symptom-icon-badge" aria-hidden="true">
+                                {% if symptom.emoji %}{{ symptom.emoji }}{% else %}<i class="fa-solid {{ symptom.icon or 'fa-circle-dot' }}"></i>{% endif %}
+                            </span>
+                            <span class="symptom-name fw-semibold text-truncate">{{ symptom.highlighted_name|safe }}</span>
+                        </div>
+                        <span class="symptom-action-pill {% if symptom.checked %}is-added{% endif %}">
+                            <i class="fa-solid {% if symptom.checked %}fa-check check-icon{% else %}fa-plus plus-icon{% endif %} me-1"></i>
+                            <span class="symptom-result-state">{% if symptom.checked %}Added{% else %}Add{% endif %}</span>
+                        </span>
                     </div>
                 </button>
             </div>
         {% endfor %}
     </div>
 {% else %}
-    <div class="glass-panel p-4 text-center text-muted">
-        {{ empty_message or 'No symptoms found. Try a broader search.' }}
+    <div class="glass-panel p-4 text-center">
+        <div class="mb-3 text-muted display-6"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <h5 class="fw-bold mb-2">No matching symptoms found</h5>
+        <p class="text-muted small mb-3">{{ empty_message or "We couldn't find symptoms matching your search. Try typing a different keyword or choose another category." }}</p>
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 reset-filter-btn">
+            <i class="fa-solid fa-rotate-left me-1"></i>View All Symptoms
+        </button>
     </div>
 {% endif %}

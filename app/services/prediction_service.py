@@ -307,7 +307,8 @@ def compute_condition_matches(selected_symptoms, age, gender, form_data):
     if not selected_set:
         return []
 
-    ranked = {}
+    # --- Pass 1: compute raw scores for all matching conditions ---
+    raw_ranked = {}
     for condition_name, profile in CONDITION_PROFILES.items():
         symptom_weights = profile["symptom_weights"]
         matched = [symptom for symptom in selected_set if symptom in symptom_weights]
@@ -319,16 +320,13 @@ def compute_condition_matches(selected_symptoms, age, gender, form_data):
         key_hits = sum(1 for symptom in profile["key_symptoms"] if symptom in selected_set)
         key_coverage = key_hits / max(len(profile["key_symptoms"]), 1)
 
+        # Core raw score — weighted by match depth AND coverage
         raw_score = (matched_weight * 1.3) + (coverage * 3.6) + (key_coverage * 2.1)
         raw_score += demographic_adjustment(condition_name, age, gender)
         raw_score += detail_adjustment(condition_name, form_data)
 
-        confidence = max(20, min(96, int(25 + raw_score * 8.5)))
-        ranked[condition_name] = {
+        raw_ranked[condition_name] = {
             "name": condition_name,
-            "confidence": confidence,
-            "match_label": confidence_label(confidence),
-            "urgency": urgency_from_severity(profile["severity"], confidence),
             "severity": profile["severity"],
             "evidence": sorted(matched, key=lambda s: symptom_weights[s], reverse=True)[:4],
             "description": CONDITION_DESCRIPTIONS.get(
@@ -339,19 +337,16 @@ def compute_condition_matches(selected_symptoms, age, gender, form_data):
             "note": "",
         }
 
+    # --- Apply combination rules (boost raw_score) ---
     for rule in COMBINATION_RULES:
         required = rule["required"]
         if not required.issubset(selected_set):
             continue
         target = rule["condition"]
-        if target not in ranked:
+        if target not in raw_ranked:
             bonus_raw = rule["bonus"] + 2.0
-            confidence = max(58, min(97, int(25 + bonus_raw * 10)))
-            ranked[target] = {
+            raw_ranked[target] = {
                 "name": target,
-                "confidence": confidence,
-                "match_label": confidence_label(confidence),
-                "urgency": rule["urgency"],
                 "severity": "medium" if rule["urgency"] != "high" else "high",
                 "evidence": sorted(list(required)),
                 "description": CONDITION_DESCRIPTIONS.get(
@@ -359,18 +354,43 @@ def compute_condition_matches(selected_symptoms, age, gender, form_data):
                 ),
                 "raw_score": bonus_raw,
                 "note": rule["note"],
+                "_rule_urgency": rule["urgency"],
             }
         else:
-            ranked[target]["raw_score"] += rule["bonus"]
-            ranked[target]["confidence"] = max(
-                ranked[target]["confidence"],
-                min(97, int(25 + ranked[target]["raw_score"] * 8.5)),
-            )
-            ranked[target]["match_label"] = confidence_label(ranked[target]["confidence"])
-            ranked[target]["urgency"] = rule["urgency"]
-            ranked[target]["note"] = rule["note"]
+            raw_ranked[target]["raw_score"] += rule["bonus"]
+            raw_ranked[target]["_rule_urgency"] = rule["urgency"]
+            raw_ranked[target]["note"] = rule["note"]
 
-    results = sorted(ranked.values(), key=lambda item: item["raw_score"], reverse=True)[:8]
+    if not raw_ranked:
+        return []
+
+    # --- Pass 2: normalize confidence proportionally against the top score ---
+    # Top condition gets capped at 92%; others scale down from there.
+    # This gives a realistic spread instead of everything clustering at 85-97%.
+    top_raw = max(item["raw_score"] for item in raw_ranked.values())
+    top_cap = 92  # max confidence for the best-matching condition
+    min_conf = 20  # floor
+
+    ranked = {}
+    for condition_name, item in raw_ranked.items():
+        ratio = item["raw_score"] / top_raw if top_raw > 0 else 0.0
+        confidence = int(min_conf + ratio * (top_cap - min_conf))
+        confidence = max(min_conf, min(top_cap, confidence))
+        rule_urgency = item.pop("_rule_urgency", None)
+        urgency = rule_urgency if rule_urgency else urgency_from_severity(item["severity"], confidence)
+        ranked[condition_name] = {
+            "name": condition_name,
+            "confidence": confidence,
+            "match_label": confidence_label(confidence),
+            "urgency": urgency,
+            "severity": item["severity"],
+            "evidence": item["evidence"],
+            "description": item["description"],
+            "raw_score": item["raw_score"],
+            "note": item["note"],
+        }
+
+    results = sorted(ranked.values(), key=lambda x: x["raw_score"], reverse=True)[:8]
     for item in results:
         del item["raw_score"]
     return results
