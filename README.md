@@ -9,7 +9,7 @@
 ![SHAP](https://img.shields.io/badge/XAI-SHAP-purple)
 ![Gemini](https://img.shields.io/badge/LLM-Gemini%202.5%20Flash-blue?logo=google)
 ![FastAPI](https://img.shields.io/badge/ML%20Service-FastAPI-teal?logo=fastapi)
-![Tests](https://img.shields.io/badge/Tests-134%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-137%20passed-brightgreen)
 ![FHIR](https://img.shields.io/badge/Interop-FHIR%20R4-red)
 ![HIPAA](https://img.shields.io/badge/Compliance-HIPAA%20Audit-green)
 
@@ -23,6 +23,8 @@ Most symptom checkers are **black-box rule engines**. This is not one of them.
 
 Health Checker Pro is a **full ML + AI pipeline** — from raw Kaggle data to a deployed multi-service platform — with:
 
+- **Interactive Symptom Explorer** with one-tap popular symptom chips, 2-way synced SVG body map, instant zero-latency search with clear button, and keyboard shortcuts
+- **Calibrated Clinical Confidence** — proportional normalization (30%–92%) avoiding false score inflation on sparse symptom inputs
 - **Explainable AI** (SHAP) that shows *why* the model diagnosed what it did, symptom by symptom
 - A **Gemini-powered RAG chatbot** that answers natural-language health queries against a curated Ayurvedic/clinical knowledge base
 - A **real-time WebSocket vitals dashboard** for live patient monitoring (IoT-ready)
@@ -205,6 +207,7 @@ python app.py
 ### ML Microservice (enables SHAP + symptom extraction)
 ```bash
 pip install fastapi uvicorn
+# Start the ML microservice (default port 8000, or customize via ML_SERVICE_URL in .env)
 python -m uvicorn ml_service.main:app --host 0.0.0.0 --port 8000
 # → http://localhost:8000/docs  (interactive Swagger UI)
 ```
@@ -253,6 +256,8 @@ docker compose up --build
 | Feature | Technology | Status |
 |---------|-----------|--------|
 | Disease Prediction (21 classes) | `HistGradientBoostingClassifier` · scikit-learn | ✅ |
+| Calibrated Confidence Scoring | Proportional normalization · non-inflated spread | ✅ |
+| Interactive Symptom Explorer | SVG Body Map · HTMX · Quick Chips · Instant Search | ✅ |
 | Explainable AI | SHAP `TreeExplainer` · waterfall chart UI | ✅ |
 | AI Medical Chatbot | Gemini 2.5 Flash · RAG architecture | ✅ |
 | Voice Input | Web Speech API | ✅ |
