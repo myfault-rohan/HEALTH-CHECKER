@@ -16,7 +16,6 @@ from app.models.user_store import (
 )
 from app.services.prediction_service import (
     SYMPTOM_ALIASES,
-    get_searchable_symptoms,
     get_symptom_categories,
     normalize_symptom_name,
     ordered_unique,
